@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -77,11 +78,9 @@ builder.Services
     });
 
 builder.Services.AddHealthChecks().AddMongoDb(
-    sp => new MongoClient(cfg["MongoSettings:ConnectionString"]),
-    sp => cfg["MongoSettings:DatabaseName"],
-    name: "mongodb"
-);
-
+    clientFactory: _ => new MongoClient(cfg["MongoSettings:ConnectionString"]!),
+    databaseNameFactory: _ => cfg["MongoSettings:DatabaseName"]!,
+    name: "mongodb");
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -90,12 +89,15 @@ builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 builder.Services.AddScoped<ICandidaturaRepository, CandidaturaRepository>();
 builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
+
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddScoped<InsightTriggerService>();
-
 builder.Services.AddHttpClient<InsightClient>();
 builder.Services.AddHttpClient<WhyMeGenerator>();
+builder.Services.AddDbContext<AppLogContext>(options =>
+    options.UseSqlite("Data Source=logs.db"));
+builder.Services.AddScoped<LogRepository>();
 
 var app = builder.Build();
 
@@ -128,11 +130,11 @@ if (app.Environment.IsProduction())
     });
 }
 
-
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapHealthChecks("/health");
 
