@@ -9,10 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 builder.Host.UseSerilog();
-
+builder.Services.AddSingleton<ReStartAI.Application.Security.JwtTokenService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
+
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReStart.AI API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
