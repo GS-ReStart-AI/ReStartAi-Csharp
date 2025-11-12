@@ -1,11 +1,16 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using ReStartAI.Infrastructure.Data;
 using ReStartAI.Infrastructure.Repositories;
 using ReStartAI.Application.Security;
+using ReStartAI.Application.IoT;
+using ReStartAI.Application.WhyMe;
+using ReStartAI.Api.Services;
+using HealthChecks.MongoDb;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,13 +34,7 @@ builder.Services.AddSwaggerGen(c =>
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
+        { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() }
     });
 });
 
@@ -69,32 +68,39 @@ builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<IVagaRepository, VagaRepository>();
 builder.Services.AddScoped<ICandidaturaRepository, CandidaturaRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
+builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtTokenService>();
+builder.Services.AddHttpClient<InsightClient>();
+builder.Services.AddHttpClient<WhyMeGenerator>();
+builder.Services.AddScoped<InsightTriggerService>();
 
 var app = builder.Build();
 
 app.UseSwagger();
+app.UseSwaggerUI();
 
 var swaggerKeyHeader = cfg["Swagger:ApiKeyHeaderName"] ?? "x-api-key";
 var swaggerKeyValue = cfg["Swagger:ApiKey"] ?? string.Empty;
 
-app.Use(async (ctx, next) =>
+if (app.Environment.IsProduction())
 {
-    if (ctx.Request.Path.StartsWithSegments("/swagger"))
+    app.Use(async (ctx, next) =>
     {
-        if (!ctx.Request.Headers.TryGetValue(swaggerKeyHeader, out var provided) ||
-            string.IsNullOrEmpty(swaggerKeyValue) ||
-            !string.Equals(provided.ToString(), swaggerKeyValue, StringComparison.Ordinal))
+        if (ctx.Request.Path.StartsWithSegments("/swagger"))
         {
-            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await ctx.Response.WriteAsync("Swagger UI requires valid API Key.");
-            return;
+            if (!ctx.Request.Headers.TryGetValue(swaggerKeyHeader, out var provided) ||
+                string.IsNullOrEmpty(swaggerKeyValue) ||
+                !string.Equals(provided.ToString(), swaggerKeyValue, StringComparison.Ordinal))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await ctx.Response.WriteAsync("Swagger UI requires valid API Key.");
+                return;
+            }
         }
-    }
-    await next();
-});
-
-app.UseSwaggerUI();
+        await next();
+    });
+}
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
@@ -102,5 +108,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
-
 app.Run();

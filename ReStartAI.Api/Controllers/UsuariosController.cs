@@ -2,71 +2,79 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Application.Security;
-using ReStartAI.Domain.Entities;
 using ReStartAI.Infrastructure.Repositories;
 
 namespace ReStartAI.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/usuarios/me")]
 [Authorize]
 public class UsuariosController : ControllerBase
 {
     private readonly IUsuarioRepository _usuarios;
+    private readonly PasswordHasher _hasher;
 
-    public UsuariosController(IUsuarioRepository usuarios)
+    public UsuariosController(IUsuarioRepository usuarios, PasswordHasher hasher)
     {
         _usuarios = usuarios;
+        _hasher = hasher;
     }
 
-    public record UsuarioResponse(string Id, string NomeCompleto, string Cpf, DateTime? DataNascimento, string Email, DateTime CriadoEm, DateTime? AtualizadoEm);
-    public record UpdateUsuarioRequest(string NomeCompleto, string Cpf, DateTime? DataNascimento, string Email, string? SenhaNova);
+    public record ProfileResponse(string Id, string? NomeCompleto, string? Cpf, DateTime? DataNascimento, string Email);
+    public record UpdateRequest(string? NomeCompleto, string? Cpf, DateTime? DataNascimento, string Email, string? NovaSenha);
     public record DeleteRequest(string Senha);
 
-    [HttpGet("me")]
-    public async Task<ActionResult<UsuarioResponse>> GetMe()
+    [HttpGet]
+    public async Task<ActionResult<ProfileResponse>> Get()
     {
         var uid = User.FindFirstValue("uid");
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
+
         var u = await _usuarios.GetByIdAsync(uid);
         if (u is null) return NotFound();
-        return Ok(new UsuarioResponse(u.Id!, u.NomeCompleto, u.Cpf, u.DataNascimento, u.Email, u.CriadoEm, u.AtualizadoEm));
+
+        return Ok(new ProfileResponse(u.Id!, u.NomeCompleto, u.Cpf, u.DataNascimento, u.Email));
     }
 
-    [HttpPut("me")]
-    public async Task<ActionResult<UsuarioResponse>> UpdateMe([FromBody] UpdateUsuarioRequest req)
+    [HttpPut]
+    public async Task<ActionResult<ProfileResponse>> Update([FromBody] UpdateRequest req)
     {
         var uid = User.FindFirstValue("uid");
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
+
         var u = await _usuarios.GetByIdAsync(uid);
         if (u is null) return NotFound();
 
-        if (!string.Equals(u.Email, req.Email, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(u.Email, req.Email.Trim().ToLowerInvariant(), StringComparison.Ordinal))
         {
-            if (await _usuarios.EmailExistsAsync(req.Email)) return Conflict("email_ja_utilizado");
-            u.Email = req.Email;
+            var exists = await _usuarios.GetByEmailAsync(req.Email.Trim().ToLowerInvariant());
+            if (exists is not null) return Conflict("email_ja_cadastrado");
         }
 
-        u.NomeCompleto = req.NomeCompleto;
-        u.Cpf = req.Cpf;
-        u.DataNascimento = req.DataNascimento;
-        if (!string.IsNullOrWhiteSpace(req.SenhaNova)) u.SenhaHash = PasswordHasher.Hash(req.SenhaNova);
-        u.AtualizadoEm = DateTime.UtcNow;
+        u.NomeCompleto = req.NomeCompleto ?? u.NomeCompleto;
+        u.Cpf = req.Cpf ?? u.Cpf;
+        u.DataNascimento = req.DataNascimento ?? u.DataNascimento;
+        u.Email = req.Email.Trim().ToLowerInvariant();
 
-        await _usuarios.UpdateAsync(uid, u);
+        if (!string.IsNullOrWhiteSpace(req.NovaSenha))
+            u.SenhaHash = _hasher.Hash(req.NovaSenha);
 
-        return Ok(new UsuarioResponse(u.Id!, u.NomeCompleto, u.Cpf, u.DataNascimento, u.Email, u.CriadoEm, u.AtualizadoEm));
+        await _usuarios.UpdateAsync(u.Id!, u);
+
+        return Ok(new ProfileResponse(u.Id!, u.NomeCompleto, u.Cpf, u.DataNascimento, u.Email));
     }
 
-    [HttpDelete("me")]
-    public async Task<IActionResult> DeleteMe([FromBody] DeleteRequest req)
+    [HttpDelete]
+    public async Task<IActionResult> Delete([FromBody] DeleteRequest req)
     {
         var uid = User.FindFirstValue("uid");
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
+
         var u = await _usuarios.GetByIdAsync(uid);
         if (u is null) return NotFound();
 
-        if (!PasswordHasher.Verify(req.Senha, u.SenhaHash)) return Unauthorized();
+        if (!_hasher.Verify(req.Senha, u.SenhaHash))
+            return Unauthorized();
 
         await _usuarios.DeleteAsync(uid);
         return NoContent();

@@ -15,31 +15,20 @@ public class JwtTokenService
         _cfg = cfg;
     }
 
-    public (string token, DateTime expiresAtUtc) CreateToken(string subject, IEnumerable<Claim>? extraClaims = null)
+    public string CreateToken(string subject, DateTime expiresAtUtc, IEnumerable<Claim> claims)
     {
-        var issuer = _cfg["Jwt:Issuer"]!;
-        var audience = _cfg["Jwt:Audience"]!;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_cfg["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(int.Parse(_cfg["Jwt:ExpiresMinutes"] ?? "60"));
-
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, subject),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        if (extraClaims != null) claims.AddRange(extraClaims);
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: expires,
+            issuer: _cfg["Jwt:Issuer"],
+            audience: _cfg["Jwt:Audience"],
+            claims: claims.Append(new Claim(JwtRegisteredClaimNames.Sub, subject)),
+            notBefore: DateTime.UtcNow,
+            expires: expiresAtUtc,
             signingCredentials: creds
         );
 
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-        return (jwt, expires);
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

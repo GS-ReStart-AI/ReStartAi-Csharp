@@ -12,60 +12,80 @@ namespace ReStartAI.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IUsuarioRepository _usuarios;
+    private readonly PasswordHasher _hasher;
     private readonly JwtTokenService _jwt;
 
-    public AuthController(IUsuarioRepository usuarios, JwtTokenService jwt)
+    public AuthController(IUsuarioRepository usuarios, PasswordHasher hasher, JwtTokenService jwt)
     {
         _usuarios = usuarios;
+        _hasher = hasher;
         _jwt = jwt;
     }
 
-    public record SignupRequest(string NomeCompleto, string Cpf, DateTime? DataNascimento, string Email, string Senha);
+    public record SignupRequest(string NomeCompleto, string Cpf, DateTime DataNascimento, string Email, string Senha);
     public record LoginRequest(string Email, string Senha);
-    public record AuthResponse(string Token, DateTime ExpiresAtUtc, string UserId, string Email, string NomeCompleto);
+    public record AuthResponse(string Token, DateTime ExpiresAt);
 
     [HttpPost("signup")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> Signup([FromBody] SignupRequest req)
     {
-        if (await _usuarios.EmailExistsAsync(req.Email)) return Conflict("email_ja_utilizado");
+        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Senha))
+            return BadRequest();
 
-        var user = new Usuario
+        var exists = await _usuarios.GetByEmailAsync(req.Email.Trim().ToLowerInvariant());
+        if (exists is not null) return Conflict("email_ja_cadastrado");
+
+        var u = new Usuario
         {
             NomeCompleto = req.NomeCompleto,
             Cpf = req.Cpf,
             DataNascimento = req.DataNascimento,
-            Email = req.Email,
-            SenhaHash = PasswordHasher.Hash(req.Senha),
-            CriadoEm = DateTime.UtcNow
+            Email = req.Email.Trim().ToLowerInvariant(),
+            SenhaHash = _hasher.Hash(req.Senha)
         };
 
-        await _usuarios.InsertAsync(user);
+        await _usuarios.InsertAsync(u);
 
-        var (token, exp) = _jwt.CreateToken(user.Email, new[]
+        var claims = new[]
         {
-            new Claim("uid", user.Id ?? string.Empty),
-            new Claim(ClaimTypes.Email, user.Email)
-        });
+            new Claim("uid", u.Id!),
+            new Claim(ClaimTypes.Email, u.Email),
+            new Claim(ClaimTypes.Name, u.NomeCompleto ?? u.Email),
+            new Claim(ClaimTypes.Role, "user")
+        };
 
-        return Created($"api/usuarios/{user.Id}", new AuthResponse(token, exp, user.Id!, user.Email, user.NomeCompleto));
+        var expires = DateTime.UtcNow.AddHours(8);
+        var token = _jwt.CreateToken(u.Email, expires, claims);
+        return Created("", new AuthResponse(token, expires));
     }
 
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest req)
     {
-        var user = await _usuarios.GetByEmailAsync(req.Email);
+        var user = await _usuarios.GetByEmailAsync(req.Email.Trim().ToLowerInvariant());
         if (user is null) return Unauthorized();
 
-        if (!PasswordHasher.Verify(req.Senha, user.SenhaHash)) return Unauthorized();
+        if (!_hasher.Verify(req.Senha, user.SenhaHash)) return Unauthorized();
 
-        var (token, exp) = _jwt.CreateToken(user.Email, new[]
+        var claims = new[]
         {
-            new Claim("uid", user.Id ?? string.Empty),
-            new Claim(ClaimTypes.Email, user.Email)
-        });
+            new Claim("uid", user.Id!),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.NomeCompleto ?? user.Email),
+            new Claim(ClaimTypes.Role, "user")
+        };
 
-        return Ok(new AuthResponse(token, exp, user.Id!, user.Email, user.NomeCompleto));
+        var expires = DateTime.UtcNow.AddHours(8);
+        var token = _jwt.CreateToken(user.Email, expires, claims);
+        return Ok(new AuthResponse(token, expires));
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public IActionResult Logout()
+    {
+        return NoContent();
     }
 }
