@@ -1,88 +1,53 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Domain.Entities;
-using ReStartAI.Infrastructure.Repositories;
+using ReStartAI.Application.Services;
 
-namespace ReStartAI.Api.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class VagasController : ControllerBase
+namespace ReStartAI.API.Controllers
 {
-    private readonly IVagaRepository _repo;
-
-    public VagasController(IVagaRepository repo)
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    public class VagaController : ControllerBase
     {
-        _repo = repo;
-    }
+        private readonly VagaService _service;
 
-    public record VagaRequest(string Titulo, List<string> MustSkills, List<string> NiceSkills, string Area, bool Ativo);
-    public record VagaResponse(string Id, string Titulo, List<string> MustSkills, List<string> NiceSkills, string Area, bool Ativo, DateTime CriadoEm);
-
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<ActionResult<List<VagaResponse>>> Get([FromQuery] string? area = null, [FromQuery] string? must = null, [FromQuery] string? nice = null, [FromQuery] bool somenteAtivas = true)
-    {
-        var mustSkills = string.IsNullOrWhiteSpace(must) ? Array.Empty<string>() : must.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var niceSkills = string.IsNullOrWhiteSpace(nice) ? Array.Empty<string>() : nice.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        if (somenteAtivas && string.IsNullOrWhiteSpace(area) && !mustSkills.Any() && !niceSkills.Any())
+        public VagaController(VagaService service)
         {
-            var ativas = await _repo.GetAtivasAsync();
-            return Ok(ativas.Select(v => new VagaResponse(v.Id!, v.Titulo, v.MustSkills, v.NiceSkills, v.Area, v.Ativo, v.CriadoEm)).ToList());
+            _service = service;
         }
 
-        var list = await _repo.SearchAsync(area, mustSkills, niceSkills);
-        return Ok(list.Select(v => new VagaResponse(v.Id!, v.Titulo, v.MustSkills, v.NiceSkills, v.Area, v.Ativo, v.CriadoEm)).ToList());
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<VagaResponse>> GetById(string id)
-    {
-        var v = await _repo.GetByIdAsync(id);
-        if (v is null) return NotFound();
-        return Ok(new VagaResponse(v.Id!, v.Titulo, v.MustSkills, v.NiceSkills, v.Area, v.Ativo, v.CriadoEm));
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<VagaResponse>> Create([FromBody] VagaRequest req)
-    {
-        var v = new Vaga
+        [HttpGet]
+        public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
         {
-            Titulo = req.Titulo,
-            MustSkills = req.MustSkills?.Select(s => s.Trim().ToLowerInvariant()).Distinct().ToList() ?? new(),
-            NiceSkills = req.NiceSkills?.Select(s => s.Trim().ToLowerInvariant()).Distinct().ToList() ?? new(),
-            Area = req.Area,
-            Ativo = req.Ativo,
-            CriadoEm = DateTime.UtcNow
-        };
-        await _repo.InsertAsync(v);
-        return CreatedAtAction(nameof(GetById), new { id = v.Id }, new VagaResponse(v.Id!, v.Titulo, v.MustSkills, v.NiceSkills, v.Area, v.Ativo, v.CriadoEm));
-    }
+            var result = await _service.GetAllAsync(page, pageSize);
+            return Ok(result);
+        }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult<VagaResponse>> Update(string id, [FromBody] VagaRequest req)
-    {
-        var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) return NotFound();
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            return result is null ? NotFound() : Ok(result);
+        }
 
-        existing.Titulo = req.Titulo;
-        existing.MustSkills = req.MustSkills?.Select(s => s.Trim().ToLowerInvariant()).Distinct().ToList() ?? new();
-        existing.NiceSkills = req.NiceSkills?.Select(s => s.Trim().ToLowerInvariant()).Distinct().ToList() ?? new();
-        existing.Area = req.Area;
-        existing.Ativo = req.Ativo;
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] Vaga entity)
+        {
+            var result = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
 
-        await _repo.UpdateAsync(id, existing);
-        return Ok(new VagaResponse(existing.Id!, existing.Titulo, existing.MustSkills, existing.NiceSkills, existing.Area, existing.Ativo, existing.CriadoEm));
-    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] Vaga entity)
+        {
+            await _service.UpdateAsync(id, entity);
+            return NoContent();
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(string id)
-    {
-        var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) return NotFound();
-        await _repo.DeleteAsync(id);
-        return NoContent();
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }

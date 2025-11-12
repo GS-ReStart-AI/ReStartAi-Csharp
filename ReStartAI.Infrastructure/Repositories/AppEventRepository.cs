@@ -1,49 +1,50 @@
 ﻿using MongoDB.Driver;
 using ReStartAI.Domain.Entities;
-using ReStartAI.Infrastructure.Data;
+using ReStartAI.Domain.Interfaces;
+using ReStartAI.Infrastructure.Context;
 
-namespace ReStartAI.Infrastructure.Repositories;
-
-public class AppEventRepository : MongoRepository<AppEvent>, IAppEventRepository
+namespace ReStartAI.Infrastructure.Repositories
 {
-    private readonly IMongoCollection<AppEvent> _collection;
-
-    public AppEventRepository(MongoContext context) : base(context.Database.GetCollection<AppEvent>("app_events"))
+    public class AppEventRepository : IAppEventRepository
     {
-        _collection = context.Database.GetCollection<AppEvent>("app_events");
-    }
+        private readonly IMongoCollection<AppEvent> _collection;
 
-    public new async Task InsertAsync(AppEvent e)
-    {
-        await _collection.InsertOneAsync(e);
-    }
+        public AppEventRepository(MongoDbContext context)
+        {
+            _collection = context.GetCollection<AppEvent>("appevents");
+        }
 
-    public async Task<List<AppEvent>> GetLastAsync(string userId, int limit = 10)
-    {
-        return await _collection
-            .Find(x => x.UserId == userId)
-            .SortByDescending(x => x.TimestampUtc)
-            .Limit(limit)
-            .ToListAsync();
-    }
+        public async Task<IEnumerable<AppEvent>> GetAllAsync(int pageNumber, int pageSize)
+        {
+            return await _collection.Find(_ => true)
+                .SortByDescending(e => e.TimestampUtc)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+        }
 
-    public async Task<(int jobsViewedToday, int applyClicksToday, DateTime? lastEventAt)> GetTodayMetricsAsync(string userId)
-    {
-        var start = DateTime.UtcNow.Date;
-        var end = start.AddDays(1);
+        public async Task<AppEvent?> GetByIdAsync(string id)
+        {
+            var filter = Builders<AppEvent>.Filter.Eq("_id", id);
+            return await _collection.Find(filter).FirstOrDefaultAsync();
+        }
 
-        var filter = Builders<AppEvent>.Filter.And(
-            Builders<AppEvent>.Filter.Eq(x => x.UserId, userId),
-            Builders<AppEvent>.Filter.Gte(x => x.TimestampUtc, start),
-            Builders<AppEvent>.Filter.Lt(x => x.TimestampUtc, end)
-        );
+        public async Task<AppEvent> CreateAsync(AppEvent entity)
+        {
+            await _collection.InsertOneAsync(entity);
+            return entity;
+        }
 
-        var list = await _collection.Find(filter).ToListAsync();
+        public async Task UpdateAsync(string id, AppEvent entity)
+        {
+            var filter = Builders<AppEvent>.Filter.Eq("_id", id);
+            await _collection.ReplaceOneAsync(filter, entity);
+        }
 
-        var jobs = list.Count(x => x.Type == "view_job");
-        var apply = list.Count(x => x.Type == "apply_click");
-        DateTime? last = list.Count == 0 ? null : list.Max(x => x.TimestampUtc);
-
-        return (jobs, apply, last);
+        public async Task DeleteAsync(string id)
+        {
+            var filter = Builders<AppEvent>.Filter.Eq("_id", id);
+            await _collection.DeleteOneAsync(filter);
+        }
     }
 }

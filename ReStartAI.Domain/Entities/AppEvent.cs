@@ -1,24 +1,25 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ReStartAI.Domain.Entities;
-
-public class AppEvent
+namespace ReStartAI.Domain.Entities
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id { get; set; }
+    public class AppEvent
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = string.Empty;
 
-    [BsonElement("userId")]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string UserId { get; set; } = default!;
+        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonElement("usuarioId")]
+        public string UsuarioId { get; set; } = string.Empty;
 
-    [BsonElement("type")]
-    public string Type { get; set; } = default!;
+        [BsonElement("tipo")]
+        public string Tipo { get; set; } = string.Empty;
 
-    [BsonElement("timestampUtc")]
-    public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
+        [BsonElement("timestampUtc")]
+        public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
 
-    [BsonElement("metadata")]
-    public Dictionary<string, object>? Metadata { get; set; }
+        [BsonElement("metadata")]
+        public Dictionary<string, object>? Metadata { get; set; }
+    }
 }

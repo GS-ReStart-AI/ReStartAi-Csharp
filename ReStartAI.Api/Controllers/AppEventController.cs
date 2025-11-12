@@ -6,11 +6,11 @@ namespace ReStartAI.API.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CandidaturaController : ControllerBase
+    public class AppEventController : ControllerBase
     {
-        private readonly CandidaturaService _service;
+        private readonly AppEventService _service;
 
-        public CandidaturaController(CandidaturaService service)
+        public AppEventController(AppEventService service)
         {
             _service = service;
         }
@@ -30,14 +30,14 @@ namespace ReStartAI.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Candidatura entity)
+        public async Task<IActionResult> Create([FromBody] AppEvent entity)
         {
             var result = await _service.CreateAsync(entity);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] Candidatura entity)
+        public async Task<IActionResult> Update(string id, [FromBody] AppEvent entity)
         {
             await _service.UpdateAsync(id, entity);
             return NoContent();

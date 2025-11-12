@@ -1,20 +1,19 @@
 ﻿using MongoDB.Driver;
-using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
 using ReStartAI.Infrastructure.Context;
 
 namespace ReStartAI.Infrastructure.Repositories
 {
-    public class VagaRepository : IVagaRepository
+    public class Repository<T> : IRepository<T>
     {
-        private readonly IMongoCollection<Vaga> _collection;
+        private readonly IMongoCollection<T> _collection;
 
-        public VagaRepository(MongoDbContext context)
+        public Repository(MongoDbContext context, string collectionName)
         {
-            _collection = context.GetCollection<Vaga>("vagas");
+            _collection = context.GetCollection<T>(collectionName);
         }
 
-        public async Task<IEnumerable<Vaga>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<T>> GetAllAsync(int pageNumber, int pageSize)
         {
             return await _collection.Find(_ => true)
                 .Skip((pageNumber - 1) * pageSize)
@@ -22,27 +21,27 @@ namespace ReStartAI.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Vaga?> GetByIdAsync(string id)
+        public async Task<T?> GetByIdAsync(string id)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<Vaga> CreateAsync(Vaga entity)
+        public async Task<T> CreateAsync(T entity)
         {
             await _collection.InsertOneAsync(entity);
             return entity;
         }
 
-        public async Task UpdateAsync(string id, Vaga entity)
+        public async Task UpdateAsync(string id, T entity)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", id);
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", id);
             await _collection.DeleteOneAsync(filter);
         }
     }

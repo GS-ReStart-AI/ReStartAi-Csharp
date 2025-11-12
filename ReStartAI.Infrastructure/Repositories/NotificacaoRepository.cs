@@ -5,16 +5,16 @@ using ReStartAI.Infrastructure.Context;
 
 namespace ReStartAI.Infrastructure.Repositories
 {
-    public class CandidaturaRepository : ICandidaturaRepository
+    public class NotificacaoRepository : INotificacaoRepository
     {
-        private readonly IMongoCollection<Candidatura> _collection;
+        private readonly IMongoCollection<Notificacao> _collection;
 
-        public CandidaturaRepository(MongoDbContext context)
+        public NotificacaoRepository(MongoDbContext context)
         {
-            _collection = context.GetCollection<Candidatura>("candidaturas");
+            _collection = context.GetCollection<Notificacao>("notificacoes");
         }
 
-        public async Task<IEnumerable<Candidatura>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Notificacao>> GetAllAsync(int pageNumber, int pageSize)
         {
             return await _collection.Find(_ => true)
                 .Skip((pageNumber - 1) * pageSize)
@@ -22,27 +22,27 @@ namespace ReStartAI.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Candidatura?> GetByIdAsync(string id)
+        public async Task<Notificacao?> GetByIdAsync(string id)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Notificacao>.Filter.Eq("_id", id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<Candidatura> CreateAsync(Candidatura entity)
+        public async Task<Notificacao> CreateAsync(Notificacao entity)
         {
             await _collection.InsertOneAsync(entity);
             return entity;
         }
 
-        public async Task UpdateAsync(string id, Candidatura entity)
+        public async Task UpdateAsync(string id, Notificacao entity)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Notificacao>.Filter.Eq("_id", id);
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Notificacao>.Filter.Eq("_id", id);
             await _collection.DeleteOneAsync(filter);
         }
     }

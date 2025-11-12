@@ -1,32 +1,27 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ReStartAI.Domain.Entities;
-
-public class Usuario
+namespace ReStartAI.Domain.Entities
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id { get; set; }
+    public class Usuario
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = string.Empty;
 
-    [BsonElement("nomeCompleto")]
-    public string NomeCompleto { get; set; } = default!;
+        [BsonElement("nomeCompleto")]
+        public string NomeCompleto { get; set; } = string.Empty;
 
-    [BsonElement("cpf")]
-    public string Cpf { get; set; } = default!;
+        [BsonElement("cpf")]
+        public string Cpf { get; set; } = string.Empty;
 
-    [BsonElement("dataNascimento")]
-    public DateTime? DataNascimento { get; set; }
+        [BsonElement("dataNascimento")]
+        public DateTime DataNascimento { get; set; }
 
-    [BsonElement("email")]
-    public string Email { get; set; } = default!;
+        [BsonElement("email")]
+        public string Email { get; set; } = string.Empty;
 
-    [BsonElement("senhaHash")]
-    public string SenhaHash { get; set; } = default!;
-
-    [BsonElement("criadoEm")]
-    public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
-
-    [BsonElement("atualizadoEm")]
-    public DateTime? AtualizadoEm { get; set; }
+        [BsonElement("senhaHash")]
+        public string SenhaHash { get; set; } = string.Empty;
+    }
 }

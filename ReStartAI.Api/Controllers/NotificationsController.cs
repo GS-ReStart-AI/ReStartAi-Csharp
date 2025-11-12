@@ -1,50 +1,53 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Domain.Entities;
-using ReStartAI.Infrastructure.Repositories;
+using ReStartAI.Application.Services;
 
-namespace ReStartAI.Api.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class NotificationsController : ControllerBase
+namespace ReStartAI.API.Controllers
 {
-    private readonly INotificationRepository _repo;
-
-    public NotificationsController(INotificationRepository repo)
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    public class NotificacaoController : ControllerBase
     {
-        _repo = repo;
-    }
+        private readonly NotificacaoService _service;
 
-    public record NotificationItem(string Id, string Titulo, string Mensagem, bool Lido, DateTime CriadoEm);
+        public NotificacaoController(NotificacaoService service)
+        {
+            _service = service;
+        }
 
-    [HttpGet]
-    public async Task<ActionResult<List<NotificationItem>>> Get([FromQuery] bool? lido = null)
-    {
-        var uid = User.FindFirstValue("uid");
-        if (string.IsNullOrEmpty(uid)) return Unauthorized();
-        var list = await _repo.GetByUserAsync(uid, lido);
-        var result = list.Select(n => new NotificationItem(n.Id!, n.Titulo, n.Mensagem, n.Lido, n.CriadoEm)).ToList();
-        return Ok(result);
-    }
+        [HttpGet]
+        public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
+        {
+            var result = await _service.GetAllAsync(page, pageSize);
+            return Ok(result);
+        }
 
-    [HttpPost("{id}/read")]
-    public async Task<IActionResult> MarkRead(string id)
-    {
-        var uid = User.FindFirstValue("uid");
-        if (string.IsNullOrEmpty(uid)) return Unauthorized();
-        await _repo.MarkAsReadAsync(id);
-        return NoContent();
-    }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            return result is null ? NotFound() : Ok(result);
+        }
 
-    [HttpPost("read-all")]
-    public async Task<IActionResult> MarkAllRead()
-    {
-        var uid = User.FindFirstValue("uid");
-        if (string.IsNullOrEmpty(uid)) return Unauthorized();
-        await _repo.MarkAllAsReadAsync(uid);
-        return NoContent();
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] Notificacao entity)
+        {
+            var result = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] Notificacao entity)
+        {
+            await _service.UpdateAsync(id, entity);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }
