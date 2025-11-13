@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Application.Dto;
+using ReStartAI.Application.Helpers;
 using ReStartAI.Application.Services;
 using ReStartAI.Domain.Entities;
 
@@ -21,7 +22,10 @@ namespace ReStartAI.Api.Controllers
         {
             var items = await _service.GetAllAsync(page, pageSize);
             var total = await _service.CountAsync();
-            var result = new PagedResult<Candidatura>(items, total, page, pageSize);
+            var result = new PagedResult<object>(
+                items.Select(i => HateoasHelper.WithLinks(i, "/api/v1/candidatura", i.Id)),
+                total, page, pageSize
+            );
             return Ok(result);
         }
 
@@ -30,14 +34,16 @@ namespace ReStartAI.Api.Controllers
         {
             var entity = await _service.GetByIdAsync(id);
             if (entity == null) return NotFound();
-            return Ok(entity);
+            var result = HateoasHelper.WithLinks(entity, "/api/v1/candidatura", id);
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Candidatura entity)
         {
             var created = await _service.CreateAsync(entity);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            var result = HateoasHelper.WithLinks(created, "/api/v1/candidatura", created.Id);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, result);
         }
 
         [HttpPut("{id}")]
