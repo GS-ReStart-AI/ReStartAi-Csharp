@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Application.Dto;
 using ReStartAI.Domain.Entities;
 using ReStartAI.Application.Services;
 
-namespace ReStartAI.API.Controllers
+namespace ReStartAI.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -18,22 +19,25 @@ namespace ReStartAI.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
         {
-            var result = await _service.GetAllAsync(page, pageSize);
+            var items = await _service.GetAllAsync(page, pageSize);
+            var total = await _service.CountAsync();
+            var result = new PagedResult<Vaga>(items, total, page, pageSize);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var result = await _service.GetByIdAsync(id);
-            return result is null ? NotFound() : Ok(result);
+            var entity = await _service.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+            return Ok(entity);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Vaga entity)
         {
-            var result = await _service.CreateAsync(entity);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]

@@ -1,7 +1,7 @@
-﻿using MongoDB.Driver;
-using ReStartAI.Domain.Entities;
+﻿using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
 using ReStartAI.Infrastructure.Context;
+using MongoDB.Driver;
 
 namespace ReStartAI.Infrastructure.Repositories
 {
@@ -11,14 +11,14 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public AppEventRepository(MongoDbContext context)
         {
-            _collection = context.GetCollection<AppEvent>("appevents");
+            _collection = context.GetCollection<AppEvent>("AppEvents");
         }
 
-        public async Task<IEnumerable<AppEvent>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<AppEvent>> GetAllAsync(int page, int pageSize)
         {
             return await _collection.Find(_ => true)
                 .SortByDescending(e => e.TimestampUtc)
-                .Skip((pageNumber - 1) * pageSize)
+                .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
         }
@@ -45,6 +45,11 @@ namespace ReStartAI.Infrastructure.Repositories
         {
             var filter = Builders<AppEvent>.Filter.Eq("_id", id);
             await _collection.DeleteOneAsync(filter);
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return (int)await _collection.CountDocumentsAsync(_ => true);
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using MongoDB.Driver;
-using ReStartAI.Domain.Entities;
+﻿using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
 using ReStartAI.Infrastructure.Context;
+using MongoDB.Driver;
 
 namespace ReStartAI.Infrastructure.Repositories
 {
@@ -11,13 +11,13 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public UsuarioRepository(MongoDbContext context)
         {
-            _collection = context.GetCollection<Usuario>("usuarios");
+            _collection = context.GetCollection<Usuario>("Usuarios");
         }
 
-        public async Task<IEnumerable<Usuario>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Usuario>> GetAllAsync(int page, int pageSize)
         {
             return await _collection.Find(_ => true)
-                .Skip((pageNumber - 1) * pageSize)
+                .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
         }
@@ -30,7 +30,7 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task<Usuario?> GetByEmailAsync(string email)
         {
-            var filter = Builders<Usuario>.Filter.Eq(u => u.Email, email.ToLowerInvariant());
+            var filter = Builders<Usuario>.Filter.Eq(u => u.Email, email);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -50,6 +50,11 @@ namespace ReStartAI.Infrastructure.Repositories
         {
             var filter = Builders<Usuario>.Filter.Eq("_id", id);
             await _collection.DeleteOneAsync(filter);
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return (int)await _collection.CountDocumentsAsync(_ => true);
         }
     }
 }

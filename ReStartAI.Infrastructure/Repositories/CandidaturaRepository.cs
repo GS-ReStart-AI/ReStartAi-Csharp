@@ -1,7 +1,7 @@
-﻿using MongoDB.Driver;
-using ReStartAI.Domain.Entities;
+﻿using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
 using ReStartAI.Infrastructure.Context;
+using MongoDB.Driver;
 
 namespace ReStartAI.Infrastructure.Repositories
 {
@@ -11,13 +11,13 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public CandidaturaRepository(MongoDbContext context)
         {
-            _collection = context.GetCollection<Candidatura>("candidaturas");
+            _collection = context.GetCollection<Candidatura>("Candidaturas");
         }
 
-        public async Task<IEnumerable<Candidatura>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Candidatura>> GetAllAsync(int page, int pageSize)
         {
             return await _collection.Find(_ => true)
-                .Skip((pageNumber - 1) * pageSize)
+                .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
         }
@@ -44,6 +44,11 @@ namespace ReStartAI.Infrastructure.Repositories
         {
             var filter = Builders<Candidatura>.Filter.Eq("_id", id);
             await _collection.DeleteOneAsync(filter);
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return (int)await _collection.CountDocumentsAsync(_ => true);
         }
     }
 }

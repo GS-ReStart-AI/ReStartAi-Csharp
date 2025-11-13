@@ -12,10 +12,22 @@ namespace ReStartAI.Application.Services
             _repository = repository;
         }
 
-        public Task<IEnumerable<Vaga>> GetAllAsync(int page, int pageSize) => _repository.GetAllAsync(page, pageSize);
-        public Task<Vaga?> GetByIdAsync(string id) => _repository.GetByIdAsync(id);
-        public Task<Vaga> CreateAsync(Vaga entity) => _repository.CreateAsync(entity);
-        public Task UpdateAsync(string id, Vaga entity) => _repository.UpdateAsync(id, entity);
-        public Task DeleteAsync(string id) => _repository.DeleteAsync(id);
+        public Task<IEnumerable<Vaga>> GetAllAsync(int page, int pageSize) =>
+            _repository.GetAllAsync(page, pageSize);
+
+        public Task<Vaga?> GetByIdAsync(string id) =>
+            _repository.GetByIdAsync(id);
+
+        public Task<Vaga> CreateAsync(Vaga entity) =>
+            _repository.CreateAsync(entity);
+
+        public Task UpdateAsync(string id, Vaga entity) =>
+            _repository.UpdateAsync(id, entity);
+
+        public Task DeleteAsync(string id) =>
+            _repository.DeleteAsync(id);
+
+        public Task<int> CountAsync() =>
+            _repository.CountAsync();
     }
 }

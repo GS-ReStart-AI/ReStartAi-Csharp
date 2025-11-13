@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ReStartAI.Domain.Entities;
+using ReStartAI.Application.Dto;
 using ReStartAI.Application.Services;
-using ReStartAI.Infrastructure.Repositories;
+using ReStartAI.Domain.Entities;
 
 namespace ReStartAI.Api.Controllers
 {
@@ -10,49 +10,40 @@ namespace ReStartAI.Api.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly UsuarioService _service;
-        private readonly LogRepository _log;
 
-        public UsuarioController(UsuarioService service, LogRepository log)
+        public UsuarioController(UsuarioService service)
         {
             _service = service;
-            _log = log;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
         {
-            var result = await _service.GetAllAsync(page, pageSize);
-            await _log.AddAsync($"Listagem de usuários retornada ({result.Count()} registros).");
+            var items = await _service.GetAllAsync(page, pageSize);
+            var total = await _service.CountAsync();
+            var result = new PagedResult<Usuario>(items, total, page, pageSize);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result is null)
-            {
-                await _log.AddAsync($"Usuário não encontrado: {id}");
-                return NotFound();
-            }
-
-            await _log.AddAsync($"Usuário recuperado: {id}");
-            return Ok(result);
+            var entity = await _service.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+            return Ok(entity);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Usuario entity)
         {
-            var result = await _service.CreateAsync(entity);
-            await _log.AddAsync($"Novo usuário criado: {result.Email} (ID: {result.Id})");
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] Usuario entity)
         {
             await _service.UpdateAsync(id, entity);
-            await _log.AddAsync($"Usuário atualizado: {id}");
             return NoContent();
         }
 
@@ -60,7 +51,6 @@ namespace ReStartAI.Api.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             await _service.DeleteAsync(id);
-            await _log.AddAsync($"Usuário excluído: {id}");
             return NoContent();
         }
     }
