@@ -15,6 +15,7 @@ using ReStartAI.Application.Services;
 using ReStartAI.Application.Security;
 using ReStartAI.Application.IoT;
 using ReStartAI.Application.WhyMe;
+using ReStartAI.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +85,10 @@ builder.Services
             ClockSkew = TimeSpan.Zero
         };
     });
+
+builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
+builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
+builder.Services.AddScoped<IVagaRepository, VagaRepository>();
 
 builder.Services.AddHealthChecks().AddMongoDb(
     clientFactory: _ => new MongoClient(builder.Configuration["MongoSettings:ConnectionString"]!),
