@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ReStartAI.Api.Swagger.Candidatura;
+using ReStartAI.Api.Swagger.Examples.Candidatura;
 using ReStartAI.Application.Dto;
 using ReStartAI.Application.Helpers;
 using ReStartAI.Application.Services;

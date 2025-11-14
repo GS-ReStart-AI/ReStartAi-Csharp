@@ -1,7 +1,7 @@
 ﻿using ReStartAI.Application.Dto;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace ReStartAI.Api.Swagger.Candidatura
+namespace ReStartAI.Api.Swagger.Examples.Candidatura
 {
     public class CandidaturaRequestExample : IExamplesProvider<Domain.Entities.Candidatura>
     {
