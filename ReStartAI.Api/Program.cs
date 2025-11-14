@@ -16,6 +16,9 @@ using ReStartAI.Application.Security;
 using ReStartAI.Application.IoT;
 using ReStartAI.Application.WhyMe;
 using ReStartAI.Domain.Interfaces;
+using Swashbuckle.AspNetCore.Filters;
+using ReStartAI.Api.Swagger.Examples.Usuarios;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,19 +50,6 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.ReportApiVersions = true;
-});
-
-builder.Services.AddVersionedApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
-});
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -68,10 +58,14 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "API versionada do projeto ReStart.AI - IoT + IA Generativa"
     });
+
+    options.EnableAnnotations();
+    options.ExampleFilters();
 });
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddSwaggerExamplesFromAssemblyOf<UsuarioCreateRequestExample>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
         o.TokenValidationParameters = new TokenValidationParameters
@@ -89,6 +83,8 @@ builder.Services
 builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
 builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<IVagaRepository, VagaRepository>();
+builder.Services.AddScoped<ICandidaturaRepository, CandidaturaRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
 builder.Services.AddHealthChecks().AddMongoDb(
     clientFactory: _ => new MongoClient(builder.Configuration["MongoSettings:ConnectionString"]!),

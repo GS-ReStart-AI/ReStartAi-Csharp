@@ -10,7 +10,6 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-        <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" />
         <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="2.1.0" />
         <PackageReference Include="OpenTelemetry" Version="1.14.0" />
         <PackageReference Include="OpenTelemetry.Api" Version="1.14.0" />
@@ -21,6 +20,8 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.10.0-beta.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.4" />
 
     </ItemGroup>
 
