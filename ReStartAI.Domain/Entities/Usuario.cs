@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ReStartAI.Domain.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Usuario
     {
         [BsonId]

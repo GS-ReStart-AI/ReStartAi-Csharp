@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ReStartAI.Api.Models.Usuarios
@@ -35,8 +34,8 @@ namespace ReStartAI.Api.Models.Usuarios
 
     public sealed class UsuarioResponse
     {
-        [DefaultValue(1)]
-        public long UsuarioId { get; set; }
+        [DefaultValue("000000000000000000000001")]
+        public string UsuarioId { get; set; } = string.Empty;
 
         [DefaultValue("João da Silva")]
         public string NomeCompleto { get; set; } = string.Empty;

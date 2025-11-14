@@ -9,12 +9,11 @@ namespace ReStartAI.Api.Swagger.Examples.Candidatura
         {
             return new Domain.Entities.Candidatura
             {
-                Id = "64f1234567890abcdefc001",
-                UsuarioId = "64f1234567890abcdefu001",
-                VagaId = "64f1234567890abcdefv001",
+                UsuarioId = "000000000000000000000001",
+                VagaId = "000000000000000000000002",
                 Status = "Em análise",
                 ScoreMatch = 87,
-                ApplyUrl = "https://jobs.restart.ai/apply/64f1234567890abcdefv001"
+                ApplyUrl = "https://jobs.restart.ai/apply/000000000000000000000002"
             };
         }
     }
@@ -25,12 +24,11 @@ namespace ReStartAI.Api.Swagger.Examples.Candidatura
         {
             return new Domain.Entities.Candidatura
             {
-                Id = "64f1234567890abcdefc001",
-                UsuarioId = "64f1234567890abcdefu001",
-                VagaId = "64f1234567890abcdefv001",
+                UsuarioId = "000000000000000000000001",
+                VagaId = "000000000000000000000002",
                 Status = "Entrevista agendada",
                 ScoreMatch = 90,
-                ApplyUrl = "https://jobs.restart.ai/apply/64f1234567890abcdefv001"
+                ApplyUrl = "https://jobs.restart.ai/apply/000000000000000000000002"
             };
         }
     }
@@ -43,18 +41,18 @@ namespace ReStartAI.Api.Swagger.Examples.Candidatura
             {
                 entity = new
                 {
-                    id = "64f1234567890abcdefc001",
-                    usuarioId = "64f1234567890abcdefu001",
-                    vagaId = "64f1234567890abcdefv001",
+                    id = "000000000000000000000003",
+                    usuarioId = "000000000000000000000001",
+                    vagaId = "000000000000000000000002",
                     status = "Em análise",
                     scoreMatch = 87,
-                    applyUrl = "https://jobs.restart.ai/apply/64f1234567890abcdefv001"
+                    applyUrl = "https://jobs.restart.ai/apply/000000000000000000000002"
                 },
                 _links = new[]
                 {
-                    new { rel = "self", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "GET" },
-                    new { rel = "update", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "PUT" },
-                    new { rel = "delete", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "DELETE" }
+                    new { rel = "self",   href = "/api/v1/candidatura/000000000000000000000003", method = "GET" },
+                    new { rel = "update", href = "/api/v1/candidatura/000000000000000000000003", method = "PUT" },
+                    new { rel = "delete", href = "/api/v1/candidatura/000000000000000000000003", method = "DELETE" }
                 }
             };
         }
@@ -70,18 +68,18 @@ namespace ReStartAI.Api.Swagger.Examples.Candidatura
                 {
                     entity = new
                     {
-                        id = "64f1234567890abcdefc001",
-                        usuarioId = "64f1234567890abcdefu001",
-                        vagaId = "64f1234567890abcdefv001",
+                        id = "000000000000000000000003",
+                        usuarioId = "000000000000000000000001",
+                        vagaId = "000000000000000000000002",
                         status = "Em análise",
                         scoreMatch = 87,
-                        applyUrl = "https://jobs.restart.ai/apply/64f1234567890abcdefv001"
+                        applyUrl = "https://jobs.restart.ai/apply/000000000000000000000002"
                     },
                     _links = new[]
                     {
-                        new { rel = "self", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "GET" },
-                        new { rel = "update", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "PUT" },
-                        new { rel = "delete", href = "/api/v1/candidatura/64f1234567890abcdefc001", method = "DELETE" }
+                        new { rel = "self",   href = "/api/v1/candidatura/000000000000000000000003", method = "GET" },
+                        new { rel = "update", href = "/api/v1/candidatura/000000000000000000000003", method = "PUT" },
+                        new { rel = "delete", href = "/api/v1/candidatura/000000000000000000000003", method = "DELETE" }
                     }
                 }
             };

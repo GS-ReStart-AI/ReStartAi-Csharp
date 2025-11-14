@@ -19,7 +19,6 @@ using ReStartAI.Domain.Interfaces;
 using Swashbuckle.AspNetCore.Filters;
 using ReStartAI.Api.Swagger.Examples.Usuarios;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
@@ -85,6 +84,8 @@ builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<IVagaRepository, VagaRepository>();
 builder.Services.AddScoped<ICandidaturaRepository, CandidaturaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
+builder.Services.AddScoped<UsuarioService>();
 
 builder.Services.AddHealthChecks().AddMongoDb(
     clientFactory: _ => new MongoClient(builder.Configuration["MongoSettings:ConnectionString"]!),

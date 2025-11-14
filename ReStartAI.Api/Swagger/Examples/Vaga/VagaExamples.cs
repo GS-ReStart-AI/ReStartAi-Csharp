@@ -9,7 +9,6 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
         {
             return new Domain.Entities.Vaga
             {
-                Id = "64f1234567890abcdef12345",
                 Titulo = "Desenvolvedor .NET Pleno",
                 Empresa = "ReStart.AI",
                 Cidade = "São Paulo - SP",
@@ -28,7 +27,6 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
         {
             return new Domain.Entities.Vaga
             {
-                Id = "64f1234567890abcdef12345",
                 Titulo = "Desenvolvedor .NET Pleno (Atualizado)",
                 Empresa = "ReStart.AI",
                 Cidade = "São Paulo - SP",
@@ -49,7 +47,7 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
             {
                 entity = new
                 {
-                    id = "64f1234567890abcdef12345",
+                    id = "000000000000000000000002",
                     titulo = "Desenvolvedor .NET Pleno",
                     empresa = "ReStart.AI",
                     cidade = "São Paulo - SP",
@@ -61,9 +59,9 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
                 },
                 _links = new[]
                 {
-                    new { rel = "self", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "GET" },
-                    new { rel = "update", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "PUT" },
-                    new { rel = "delete", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "DELETE" }
+                    new { rel = "self",   href = "/api/v1/vaga/000000000000000000000002", method = "GET" },
+                    new { rel = "update", href = "/api/v1/vaga/000000000000000000000002", method = "PUT" },
+                    new { rel = "delete", href = "/api/v1/vaga/000000000000000000000002", method = "DELETE" }
                 }
             };
         }
@@ -79,7 +77,7 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
                 {
                     entity = new
                     {
-                        id = "64f1234567890abcdef12345",
+                        id = "000000000000000000000002",
                         titulo = "Desenvolvedor .NET Pleno",
                         empresa = "ReStart.AI",
                         cidade = "São Paulo - SP",
@@ -91,9 +89,9 @@ namespace ReStartAI.Api.Swagger.Examples.Vaga
                     },
                     _links = new[]
                     {
-                        new { rel = "self", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "GET" },
-                        new { rel = "update", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "PUT" },
-                        new { rel = "delete", href = "/api/v1/vaga/64f1234567890abcdef12345", method = "DELETE" }
+                        new { rel = "self",   href = "/api/v1/vaga/000000000000000000000002", method = "GET" },
+                        new { rel = "update", href = "/api/v1/vaga/000000000000000000000002", method = "PUT" },
+                        new { rel = "delete", href = "/api/v1/vaga/000000000000000000000002", method = "DELETE" }
                     }
                 }
             };

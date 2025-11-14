@@ -24,7 +24,7 @@ namespace ReStartAI.Api.Swagger.Examples.Usuarios
         {
             return new UsuarioResponse
             {
-                UsuarioId = 1,
+                UsuarioId = "000000000000000000000001",
                 NomeCompleto = "João da Silva",
                 Cpf = "12345678901",
                 DataNascimento = new DateTime(1995, 3, 15),
@@ -41,7 +41,7 @@ namespace ReStartAI.Api.Swagger.Examples.Usuarios
             {
                 new UsuarioResponse
                 {
-                    UsuarioId = 1,
+                    UsuarioId = "000000000000000000000001",
                     NomeCompleto = "João da Silva",
                     Cpf = "12345678901",
                     DataNascimento = new DateTime(1995, 3, 15),
@@ -49,7 +49,7 @@ namespace ReStartAI.Api.Swagger.Examples.Usuarios
                 },
                 new UsuarioResponse
                 {
-                    UsuarioId = 2,
+                    UsuarioId = "000000000000000000000002",
                     NomeCompleto = "Maria Oliveira",
                     Cpf = "98765432100",
                     DataNascimento = new DateTime(1990, 8, 22),

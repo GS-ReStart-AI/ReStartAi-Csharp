@@ -21,27 +21,38 @@ namespace ReStartAI.Api.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(Summary = "Lista todos os usuários", Description = "Retorna a lista completa de usuários cadastrados.")]
+        [SwaggerOperation(
+            Summary = "Lista todos os usuários",
+            Description = "Retorna a lista paginada de usuários cadastrados."
+        )]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(UsuarioResponseListExample))]
         public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
         {
             var list = await _service.GetAllAsync(page, pageSize);
-            return Ok(list.Select(MapToResponse));
+            var result = list.Select(MapToResponse);
+            return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        [SwaggerOperation(Summary = "Busca usuário por ID", Description = "Retorna os dados completos de um usuário.")]
+        [HttpGet("{id:length(24)}")]
+        [SwaggerOperation(
+            Summary = "Busca usuário por ID",
+            Description = "Retorna os dados completos de um usuário pelo seu ObjectId do MongoDB."
+        )]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(UsuarioResponseExample))]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> GetById([FromRoute] string id)
         {
             var entity = await _service.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            if (entity == null)
+                return NotFound();
 
             return Ok(MapToResponse(entity));
         }
 
         [HttpPost]
-        [SwaggerOperation(Summary = "Cria um novo usuário", Description = "Cria um novo usuário no sistema.")]
+        [SwaggerOperation(
+            Summary = "Cria um novo usuário",
+            Description = "Cria um novo usuário no sistema."
+        )]
         [SwaggerRequestExample(typeof(UsuarioCreateRequest), typeof(UsuarioCreateRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status201Created, typeof(UsuarioResponseExample))]
         public async Task<IActionResult> Create([FromBody] UsuarioCreateRequest request)
@@ -49,17 +60,22 @@ namespace ReStartAI.Api.Controllers
             var entity = MapToEntity(request);
             var created = await _service.CreateAsync(entity);
 
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, MapToResponse(created));
+            var response = MapToResponse(created);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, response);
         }
 
-        [HttpPut("{id}")]
-        [SwaggerOperation(Summary = "Atualiza um usuário", Description = "Atualiza os dados de um usuário existente.")]
+        [HttpPut("{id:length(24)}")]
+        [SwaggerOperation(
+            Summary = "Atualiza um usuário",
+            Description = "Atualiza os dados de um usuário existente pelo seu ObjectId do MongoDB."
+        )]
         [SwaggerRequestExample(typeof(UsuarioCreateRequest), typeof(UsuarioUpdateRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(UsuarioResponseExample))]
-        public async Task<IActionResult> Update(string id, [FromBody] UsuarioCreateRequest request)
+        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UsuarioCreateRequest request)
         {
             var entity = await _service.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            if (entity == null)
+                return NotFound();
 
             entity.NomeCompleto = request.NomeCompleto;
             entity.Cpf = request.Cpf;
@@ -67,16 +83,21 @@ namespace ReStartAI.Api.Controllers
             entity.Email = request.Email;
 
             await _service.UpdateAsync(id, entity);
+
             return Ok(MapToResponse(entity));
         }
 
-        [HttpDelete("{id}")]
-        [SwaggerOperation(Summary = "Remove usuário", Description = "Exclui um usuário definitivamente.")]
+        [HttpDelete("{id:length(24)}")]
+        [SwaggerOperation(
+            Summary = "Remove usuário",
+            Description = "Exclui um usuário definitivamente pelo seu ObjectId do MongoDB."
+        )]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(UsuarioDeleteResponseExample))]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete([FromRoute] string id)
         {
             var entity = await _service.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            if (entity == null)
+                return NotFound();
 
             await _service.DeleteAsync(id);
             return Ok(new { message = "Usuário removido com sucesso" });
@@ -86,7 +107,7 @@ namespace ReStartAI.Api.Controllers
         {
             return new UsuarioResponse
             {
-                UsuarioId = 0,
+                UsuarioId = e.Id,
                 NomeCompleto = e.NomeCompleto,
                 Cpf = e.Cpf,
                 DataNascimento = e.DataNascimento,

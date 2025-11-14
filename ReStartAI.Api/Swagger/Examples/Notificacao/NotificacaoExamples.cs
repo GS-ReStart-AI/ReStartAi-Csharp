@@ -9,8 +9,7 @@ namespace ReStartAI.Api.Swagger.Examples.Notificacao
         {
             return new Domain.Entities.Notificacao
             {
-                Id = "64f1234567890abcdefn001",
-                UsuarioId = "64f1234567890abcdefu001",
+                UsuarioId = "000000000000000000000001",
                 Titulo = "Nova vaga compatível com seu perfil",
                 Mensagem = "Encontramos uma vaga de Desenvolvedor .NET Pleno que combina com o seu currículo."
             };
@@ -23,8 +22,7 @@ namespace ReStartAI.Api.Swagger.Examples.Notificacao
         {
             return new Domain.Entities.Notificacao
             {
-                Id = "64f1234567890abcdefn001",
-                UsuarioId = "64f1234567890abcdefu001",
+                UsuarioId = "000000000000000000000001",
                 Titulo = "Vaga atualizada",
                 Mensagem = "A vaga de Desenvolvedor .NET Pleno teve a descrição atualizada. Confira os novos requisitos."
             };
@@ -39,16 +37,16 @@ namespace ReStartAI.Api.Swagger.Examples.Notificacao
             {
                 entity = new
                 {
-                    id = "64f1234567890abcdefn001",
-                    usuarioId = "64f1234567890abcdefu001",
+                    id = "000000000000000000000030",
+                    usuarioId = "000000000000000000000001",
                     titulo = "Nova vaga compatível com seu perfil",
                     mensagem = "Encontramos uma vaga de Desenvolvedor .NET Pleno que combina com o seu currículo."
                 },
                 _links = new[]
                 {
-                    new { rel = "self", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "GET" },
-                    new { rel = "update", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "PUT" },
-                    new { rel = "delete", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "DELETE" }
+                    new { rel = "self",   href = "/api/v1/notificacao/000000000000000000000030", method = "GET" },
+                    new { rel = "update", href = "/api/v1/notificacao/000000000000000000000030", method = "PUT" },
+                    new { rel = "delete", href = "/api/v1/notificacao/000000000000000000000030", method = "DELETE" }
                 }
             };
         }
@@ -64,16 +62,16 @@ namespace ReStartAI.Api.Swagger.Examples.Notificacao
                 {
                     entity = new
                     {
-                        id = "64f1234567890abcdefn001",
-                        usuarioId = "64f1234567890abcdefu001",
+                        id = "000000000000000000000030",
+                        usuarioId = "000000000000000000000001",
                         titulo = "Nova vaga compatível com seu perfil",
                         mensagem = "Encontramos uma vaga de Desenvolvedor .NET Pleno que combina com o seu currículo."
                     },
                     _links = new[]
                     {
-                        new { rel = "self", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "GET" },
-                        new { rel = "update", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "PUT" },
-                        new { rel = "delete", href = "/api/v1/notificacao/64f1234567890abcdefn001", method = "DELETE" }
+                        new { rel = "self",   href = "/api/v1/notificacao/000000000000000000000030", method = "GET" },
+                        new { rel = "update", href = "/api/v1/notificacao/000000000000000000000030", method = "PUT" },
+                        new { rel = "delete", href = "/api/v1/notificacao/000000000000000000000030", method = "DELETE" }
                     }
                 }
             };

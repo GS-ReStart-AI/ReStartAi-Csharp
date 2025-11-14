@@ -1,6 +1,4 @@
-﻿using ReStartAI.Application.Dto;
-using ReStartAI.Api.Controllers;
-using ReStartAI.Api.Controllers.IoT;
+﻿using ReStartAI.Api.Controllers.IoT;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace ReStartAI.Api.Swagger.Examples.Events
@@ -11,9 +9,9 @@ namespace ReStartAI.Api.Swagger.Examples.Events
         {
             return new EventsController.PostEventRequest(
                 Tipo: "job_view",
-                Metadata: new Dictionary<string, object?>
+                Metadata: new Dictionary<string, object>
                 {
-                    { "vagaId", "64f1234567890abcdefv001" },
+                    { "vagaId", "000000000000000000000002" },
                     { "origem", "mobile" },
                     { "screen", "JobDetails" }
                 }
@@ -26,27 +24,27 @@ namespace ReStartAI.Api.Swagger.Examples.Events
         public EventsController.PostEventResponse GetExamples()
         {
             return new EventsController.PostEventResponse(
-                Id: "64f1234567890abcdefe001",
-                JobsViewedToday: 3,
-                ApplyClicksToday: 1,
-                LastEventAt: DateTime.UtcNow
+                Id: "000000000000000000000020",
+                JobsViewedToday: 5,
+                ApplyClicksToday: 2,
+                LastEventAt: DateTime.UtcNow.AddMinutes(-1)
             );
         }
     }
 
-    public class EventItemListResponseExample : IExamplesProvider<List<EventsController.EventItem>>
+    public class EventItemListResponseExample : IExamplesProvider<IEnumerable<EventsController.EventItem>>
     {
-        public List<EventsController.EventItem> GetExamples()
+        public IEnumerable<EventsController.EventItem> GetExamples()
         {
-            return new List<EventsController.EventItem>
+            return new[]
             {
                 new EventsController.EventItem(
-                    Id: "64f1234567890abcdefe001",
+                    Id: "000000000000000000000020",
                     Tipo: "job_view",
                     TimestampUtc: DateTime.UtcNow.AddMinutes(-5)
                 ),
                 new EventsController.EventItem(
-                    Id: "64f1234567890abcdefe002",
+                    Id: "000000000000000000000021",
                     Tipo: "apply_click",
                     TimestampUtc: DateTime.UtcNow.AddMinutes(-2)
                 )

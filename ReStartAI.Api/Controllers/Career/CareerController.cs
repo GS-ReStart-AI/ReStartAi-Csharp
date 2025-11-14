@@ -1,8 +1,6 @@
 ﻿using System.Security.Claims;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Swagger.Examples.Career;
 using ReStartAI.Application.IoT;

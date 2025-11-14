@@ -9,8 +9,7 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
         {
             return new Domain.Entities.Curriculo
             {
-                Id = "64f1234567890abcdef12345",
-                UsuarioId = "64f1234567890abcdef99999",
+                UsuarioId = "000000000000000000000001",
                 NomeArquivo = "curriculo-joao-silva.pdf",
                 Texto = "Profissional com experiência em desenvolvimento .NET, APIs REST e bancos NoSQL.",
                 Skills = new List<string> { "C#", ".NET", "MongoDB", "REST", "Git" },
@@ -25,8 +24,7 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
         {
             return new Domain.Entities.Curriculo
             {
-                Id = "64f1234567890abcdef12345",
-                UsuarioId = "64f1234567890abcdef99999",
+                UsuarioId = "000000000000000000000001",
                 NomeArquivo = "curriculo-joao-silva-atualizado.pdf",
                 Texto = "Profissional pleno em .NET, com experiência em microsserviços, mensageria e cloud.",
                 Skills = new List<string> { "C#", ".NET 8", "MongoDB", "RabbitMQ", "Docker", "Kubernetes" },
@@ -43,8 +41,8 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
             {
                 entity = new
                 {
-                    id = "64f1234567890abcdef12345",
-                    usuarioId = "64f1234567890abcdef99999",
+                    id = "000000000000000000000010",
+                    usuarioId = "000000000000000000000001",
                     nomeArquivo = "curriculo-joao-silva.pdf",
                     texto = "Profissional com experiência em desenvolvimento .NET, APIs REST e bancos NoSQL.",
                     skills = new[] { "C#", ".NET", "MongoDB", "REST", "Git" },
@@ -52,9 +50,9 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
                 },
                 _links = new[]
                 {
-                    new { rel = "self", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "GET" },
-                    new { rel = "update", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "PUT" },
-                    new { rel = "delete", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "DELETE" }
+                    new { rel = "self",   href = "/api/v1/curriculo/000000000000000000000010", method = "GET" },
+                    new { rel = "update", href = "/api/v1/curriculo/000000000000000000000010", method = "PUT" },
+                    new { rel = "delete", href = "/api/v1/curriculo/000000000000000000000010", method = "DELETE" }
                 }
             };
         }
@@ -70,8 +68,8 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
                 {
                     entity = new
                     {
-                        id = "64f1234567890abcdef12345",
-                        usuarioId = "64f1234567890abcdef99999",
+                        id = "000000000000000000000010",
+                        usuarioId = "000000000000000000000001",
                         nomeArquivo = "curriculo-joao-silva.pdf",
                         texto = "Profissional com experiência em desenvolvimento .NET, APIs REST e bancos NoSQL.",
                         skills = new[] { "C#", ".NET", "MongoDB", "REST", "Git" },
@@ -79,9 +77,9 @@ namespace ReStartAI.Api.Swagger.Examples.Curriculo
                     },
                     _links = new[]
                     {
-                        new { rel = "self", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "GET" },
-                        new { rel = "update", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "PUT" },
-                        new { rel = "delete", href = "/api/v1/curriculo/64f1234567890abcdef12345", method = "DELETE" }
+                        new { rel = "self",   href = "/api/v1/curriculo/000000000000000000000010", method = "GET" },
+                        new { rel = "update", href = "/api/v1/curriculo/000000000000000000000010", method = "PUT" },
+                        new { rel = "delete", href = "/api/v1/curriculo/000000000000000000000010", method = "DELETE" }
                     }
                 }
             };

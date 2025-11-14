@@ -9,13 +9,12 @@ namespace ReStartAI.Api.Swagger.Examples.AppEvent
         {
             return new Domain.Entities.AppEvent
             {
-                Id = "64f1234567890abcdefe001",
-                UsuarioId = "64f1234567890abcdefu001",
+                UsuarioId = "000000000000000000000001",
                 Tipo = "job_view",
                 TimestampUtc = new DateTime(2024, 11, 10, 14, 30, 0, DateTimeKind.Utc),
                 Metadata = new Dictionary<string, object>
                 {
-                    { "vagaId", "64f1234567890abcdefv001" },
+                    { "vagaId", "000000000000000000000002" },
                     { "origem", "mobile" },
                     { "screen", "JobDetails" }
                 }
@@ -29,13 +28,12 @@ namespace ReStartAI.Api.Swagger.Examples.AppEvent
         {
             return new Domain.Entities.AppEvent
             {
-                Id = "64f1234567890abcdefe001",
-                UsuarioId = "64f1234567890abcdefu001",
+                UsuarioId = "000000000000000000000001",
                 Tipo = "apply_click",
                 TimestampUtc = new DateTime(2024, 11, 10, 14, 35, 0, DateTimeKind.Utc),
                 Metadata = new Dictionary<string, object>
                 {
-                    { "vagaId", "64f1234567890abcdefv001" },
+                    { "vagaId", "000000000000000000000002" },
                     { "origem", "mobile" },
                     { "screen", "JobDetails" },
                     { "cta", "ApplyNow" }
@@ -52,22 +50,22 @@ namespace ReStartAI.Api.Swagger.Examples.AppEvent
             {
                 entity = new
                 {
-                    id = "64f1234567890abcdefe001",
-                    usuarioId = "64f1234567890abcdefu001",
+                    id = "000000000000000000000020",
+                    usuarioId = "000000000000000000000001",
                     tipo = "job_view",
                     timestampUtc = "2024-11-10T14:30:00Z",
                     metadata = new
                     {
-                        vagaId = "64f1234567890abcdefv001",
+                        vagaId = "000000000000000000000002",
                         origem = "mobile",
                         screen = "JobDetails"
                     }
                 },
                 _links = new[]
                 {
-                    new { rel = "self", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "GET" },
-                    new { rel = "update", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "PUT" },
-                    new { rel = "delete", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "DELETE" }
+                    new { rel = "self",   href = "/api/v1/appevent/000000000000000000000020", method = "GET" },
+                    new { rel = "update", href = "/api/v1/appevent/000000000000000000000020", method = "PUT" },
+                    new { rel = "delete", href = "/api/v1/appevent/000000000000000000000020", method = "DELETE" }
                 }
             };
         }
@@ -83,22 +81,22 @@ namespace ReStartAI.Api.Swagger.Examples.AppEvent
                 {
                     entity = new
                     {
-                        id = "64f1234567890abcdefe001",
-                        usuarioId = "64f1234567890abcdefu001",
+                        id = "000000000000000000000020",
+                        usuarioId = "000000000000000000000001",
                         tipo = "job_view",
                         timestampUtc = "2024-11-10T14:30:00Z",
                         metadata = new
                         {
-                            vagaId = "64f1234567890abcdefv001",
+                            vagaId = "000000000000000000000002",
                             origem = "mobile",
                             screen = "JobDetails"
                         }
                     },
                     _links = new[]
                     {
-                        new { rel = "self", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "GET" },
-                        new { rel = "update", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "PUT" },
-                        new { rel = "delete", href = "/api/v1/appevent/64f1234567890abcdefe001", method = "DELETE" }
+                        new { rel = "self",   href = "/api/v1/appevent/000000000000000000000020", method = "GET" },
+                        new { rel = "update", href = "/api/v1/appevent/000000000000000000000020", method = "PUT" },
+                        new { rel = "delete", href = "/api/v1/appevent/000000000000000000000020", method = "DELETE" }
                     }
                 }
             };
