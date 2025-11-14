@@ -1,14 +1,18 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Swagger.Examples.Auth;
 using ReStartAI.Application.Security;
 using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace ReStartAI.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class AuthController : ControllerBase
     {
         private readonly IUsuarioRepository _usuarios;
@@ -28,6 +32,12 @@ namespace ReStartAI.Api.Controllers
 
         [HttpPost("signup")]
         [AllowAnonymous]
+        [SwaggerOperation(
+            Summary = "Cadastro de usuário",
+            Description = "Cria um novo usuário e retorna um token JWT para autenticação."
+        )]
+        [SwaggerRequestExample(typeof(SignupRequest), typeof(SignupRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status201Created, typeof(AuthResponseExample))]
         public async Task<ActionResult<AuthResponse>> Signup([FromBody] SignupRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Senha))
@@ -57,11 +67,17 @@ namespace ReStartAI.Api.Controllers
 
             var expires = DateTime.UtcNow.AddHours(8);
             var token = _jwt.CreateToken(u.Email, expires, claims);
-            return Created("", new AuthResponse(token, expires));
+            return Created(string.Empty, new AuthResponse(token, expires));
         }
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [SwaggerOperation(
+            Summary = "Login",
+            Description = "Autentica o usuário e retorna um token JWT."
+        )]
+        [SwaggerRequestExample(typeof(LoginRequest), typeof(LoginRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(AuthResponseExample))]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest req)
         {
             var user = await _usuarios.GetByEmailAsync(req.Email.Trim().ToLowerInvariant());
@@ -84,6 +100,11 @@ namespace ReStartAI.Api.Controllers
 
         [HttpPost("logout")]
         [Authorize]
+        [SwaggerOperation(
+            Summary = "Logout",
+            Description = "Encerra a sessão do usuário no cliente. No servidor não há estado a invalidar."
+        )]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult Logout()
         {
             return NoContent();

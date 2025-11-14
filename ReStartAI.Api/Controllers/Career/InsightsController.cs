@@ -1,15 +1,19 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Swagger.Examples.Insights;
 using ReStartAI.Application.IoT;
 using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace ReStartAI.Api.Controllers.Career
 {
     [ApiController]
     [Route("api/insights")]
     [Authorize]
+    [Produces("application/json")]
     public class InsightsController : ControllerBase
     {
         private readonly InsightClient _client;
@@ -25,12 +29,27 @@ namespace ReStartAI.Api.Controllers.Career
         public record TriggerResponse(string NotificationId, string Insight, string ActionTag);
 
         [HttpPost("trigger")]
+        [SwaggerOperation(
+            Summary = "Gera um insight manual a partir das métricas IoT do usuário",
+            Description = "Recebe métricas, últimos eventos, perfil e melhor oportunidade e chama o microserviço de IoT com IA generativa para produzir um insight curto e acionável."
+        )]
+        [SwaggerRequestExample(typeof(TriggerRequest), typeof(TriggerRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(TriggerResponseExample))]
+        [ProducesResponseType(typeof(TriggerResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<TriggerResponse>> Trigger([FromBody] TriggerRequest req)
         {
             var uid = User.FindFirstValue("uid");
             if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
-            var payload = new InsightRequestDto(uid, req.Metrics, req.LastEvents ?? new List<string>(), req.Profile, req.BestOpportunity);
+            var payload = new InsightRequestDto(
+                uid,
+                req.Metrics,
+                req.LastEvents ?? new List<string>(),
+                req.Profile,
+                req.BestOpportunity
+            );
+
             var result = await _client.GetInsightAsync(payload, HttpContext.RequestAborted);
 
             var titulo = result.actionTag switch
