@@ -24,7 +24,7 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task<Curriculo?> GetByIdAsync(string id)
         {
-            var filter = Builders<Curriculo>.Filter.Eq("_id", id);
+            var filter = Builders<Curriculo>.Filter.Eq(c => c.Id, id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -36,13 +36,13 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task UpdateAsync(string id, Curriculo entity)
         {
-            var filter = Builders<Curriculo>.Filter.Eq("_id", id);
+            var filter = Builders<Curriculo>.Filter.Eq(c => c.Id, id);
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<Curriculo>.Filter.Eq("_id", id);
+            var filter = Builders<Curriculo>.Filter.Eq(c => c.Id, id);
             await _collection.DeleteOneAsync(filter);
         }
 

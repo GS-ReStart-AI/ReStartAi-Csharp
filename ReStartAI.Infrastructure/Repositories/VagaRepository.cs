@@ -24,7 +24,7 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task<Vaga?> GetByIdAsync(string id)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<Vaga>.Filter.Eq(v => v.Id, id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -36,13 +36,13 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task UpdateAsync(string id, Vaga entity)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<Vaga>.Filter.Eq(v => v.Id, id);
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<Vaga>.Filter.Eq("_id", id);
+            var filter = Builders<Vaga>.Filter.Eq(v => v.Id, id);
             await _collection.DeleteOneAsync(filter);
         }
 

@@ -24,7 +24,7 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task<Candidatura?> GetByIdAsync(string id)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Candidatura>.Filter.Eq(c => c.Id, id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -36,13 +36,13 @@ namespace ReStartAI.Infrastructure.Repositories
 
         public async Task UpdateAsync(string id, Candidatura entity)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Candidatura>.Filter.Eq(c => c.Id, id);
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<Candidatura>.Filter.Eq("_id", id);
+            var filter = Builders<Candidatura>.Filter.Eq(c => c.Id, id);
             await _collection.DeleteOneAsync(filter);
         }
 

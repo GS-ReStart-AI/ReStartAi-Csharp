@@ -84,7 +84,13 @@ builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<IVagaRepository, VagaRepository>();
 builder.Services.AddScoped<ICandidaturaRepository, CandidaturaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 
+builder.Services.AddScoped<AppEventService>();
+builder.Services.AddScoped<CurriculoService>();
+builder.Services.AddScoped<VagaService>();
+builder.Services.AddScoped<CandidaturaService>();
+builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<UsuarioService>();
 
 builder.Services.AddHealthChecks().AddMongoDb(
