@@ -1,69 +1,76 @@
-﻿using ReStartAI.Application.IoT;
-using ReStartAI.Application.Matching;
-using ReStartAI.Application.Parsing;
-using ReStartAI.Domain.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ReStartAI.Application.Services;
+using ReStartAI.Domain.Entities;
 
-namespace ReStartAI.Application.Services
+namespace ReStartAI.Application.IoT
 {
     public class InsightTriggerService
     {
-        private readonly IAppEventRepository _events;
-        private readonly ICurriculoRepository _curriculos;
-        private readonly IVagaRepository _vagas;
+        private readonly CurriculoService _curriculoService;
+        private readonly InsightClient _client;
 
-        public InsightTriggerService(IAppEventRepository events, ICurriculoRepository curriculos, IVagaRepository vagas)
+        public InsightTriggerService(
+            CurriculoService curriculoService,
+            InsightClient client)
         {
-            _events = events;
-            _curriculos = curriculos;
-            _vagas = vagas;
+            _curriculoService = curriculoService;
+            _client = client;
         }
 
-        public async Task<InsightRequestDto?> BuildAsync(string userId)
+        public async Task<InsightResponseDto?> GenerateInsightForUserAsync(
+            string usuarioId,
+            CancellationToken cancellationToken = default)
         {
-            var recent = await _events.GetAllAsync(1, 10);
-            var lastEvents = recent
-                .Where(e => e.UsuarioId == userId)
-                .OrderByDescending(e => e.TimestampUtc)
-                .Take(10)
-                .Select(e => e.Tipo)
-                .ToList();
+            var page = 1;
+            var pageSize = 100;
 
-            var curriculosUsuario = await _curriculos.GetAllAsync(1, 10);
-            var curr = curriculosUsuario.FirstOrDefault(c => c.UsuarioId == userId);
-            if (curr is null) return null;
+            var curriculos = await _curriculoService.GetAllAsync(page, pageSize);
+            var curriculo = curriculos.FirstOrDefault(c => c.UsuarioId == usuarioId);
 
-            var parser = new ResumeParser();
-            var parsed = parser.Parse(curr.Texto);
-
-            var vagas = await _vagas.GetAllAsync(1, 50);
-            var matcher = new DeterministicMatcher();
-            var best = matcher.BestMatch(vagas, parsed.Skills);
-
-            BestOpportunityDto? bestOp = null;
-            if (best is not null)
-            {
-                bestOp = new BestOpportunityDto(
-                    Role: best.Vaga.Titulo,
-                    City: best.Vaga.Cidade,
-                    Match: best.Percentual,
-                    MissingSkill: best.MustMissing.FirstOrDefault()
-                );
-            }
+            if (curriculo is null)
+                return null;
 
             var metrics = new MetricsDto(
-                JobsViewed: recent.Count(e => e.Tipo == "view"),
-                ApplyClicks: recent.Count(e => e.Tipo == "apply"),
-                LastAt: recent.OrderByDescending(e => e.TimestampUtc).FirstOrDefault()?.TimestampUtc
+                JobsViewedToday: 0,
+                ApplyClicksToday: 0,
+                LastEventAt: null
             );
+
+            var lastEvents = new List<EventDto>();
+
+            var areas = new List<string>();
+            var roles = new List<string>();
+            var gaps = new List<string>();
+
+            if (curriculo.Skills is not null && curriculo.Skills.Count > 0)
+            {
+                areas.Add("Back-end .NET");
+                roles.Add("Desenvolvedor .NET");
+            }
 
             var profile = new ProfileDto(
-                parsed.Areas,
-                parsed.PapeisSugeridos,
-                null,
-                null
+                Areas: areas,
+                Roles: roles,
+                City: null,
+                Gaps: gaps
             );
 
-            return new InsightRequestDto(userId, metrics, lastEvents, profile, bestOp);
+            BestOpportunityDto? bestOpportunity = null;
+
+            var request = new InsightRequestDto(
+                UserId: usuarioId,
+                Metrics: metrics,
+                LastEvents: lastEvents,
+                Profile: profile,
+                BestOpportunity: bestOpportunity
+            );
+
+            var response = await _client.GetInsightAsync(request, cancellationToken);
+            return response;
         }
     }
 }

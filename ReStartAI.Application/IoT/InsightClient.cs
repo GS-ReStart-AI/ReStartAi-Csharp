@@ -1,42 +1,54 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace ReStartAI.Application.IoT;
-
-public class InsightClient
+namespace ReStartAI.Application.IoT
 {
-    private readonly HttpClient _http;
-    private readonly string _internalKey;
-
-    public InsightClient(IConfiguration cfg, HttpClient http)
+    public class InsightClient
     {
-        _http = http;
-        _internalKey = cfg["IoT:InternalKey"] ?? string.Empty;
+        private readonly HttpClient _http;
+        private readonly string _internalKey;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        var baseUrl = cfg["IoT:BaseUrl"];
-        if (!string.IsNullOrWhiteSpace(baseUrl))
-            _http.BaseAddress = new Uri(baseUrl);
-    }
+        public InsightClient(IConfiguration configuration, HttpClient http)
+        {
+            _http = http;
+            _internalKey = configuration["IoT:InternalKey"] ?? string.Empty;
+            _jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
-    public async Task<InsightResponseDto> GetInsightAsync(InsightRequestDto payload, CancellationToken ct = default)
-    {
-        using var msg = new HttpRequestMessage(HttpMethod.Post, "/insight");
-        msg.Headers.Add("X-Internal-Key", _internalKey);
-        msg.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var baseUrl = configuration["IoT:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                _http.BaseAddress = new Uri(baseUrl);
+            }
+        }
 
-        using var resp = await _http.SendAsync(msg, ct);
-        var body = await resp.Content.ReadAsStringAsync(ct);
+        public async Task<InsightResponseDto> GetInsightAsync(
+            InsightRequestDto payload,
+            CancellationToken cancellationToken = default)
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, "/insight");
+            message.Headers.Add("X-Internal-Key", _internalKey);
 
-        if (!resp.IsSuccessStatusCode)
-            throw new InvalidOperationException($"IoT returned {(int)resp.StatusCode}: {body}");
+            var json = JsonSerializer.Serialize(payload, _jsonOptions);
+            message.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var dto = JsonSerializer.Deserialize<InsightResponseDto>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        if (dto is null || string.IsNullOrWhiteSpace(dto.insight) || string.IsNullOrWhiteSpace(dto.actionTag))
-            throw new InvalidOperationException("Invalid IoT response");
+            using var response = await _http.SendAsync(message, cancellationToken);
+            response.EnsureSuccessStatusCode();
 
-        return dto;
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<InsightResponseDto>(body, _jsonOptions);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Resposta vazia do serviço de IoT.");
+            }
+
+            return result;
+        }
     }
 }

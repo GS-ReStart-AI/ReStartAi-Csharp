@@ -1,29 +1,37 @@
-﻿namespace ReStartAI.Application.IoT
+﻿using System;
+using System.Collections.Generic;
+
+namespace ReStartAI.Application.IoT
 {
     public record MetricsDto(
-        int JobsViewed,
-        int ApplyClicks,
-        DateTime? LastAt
+        int JobsViewedToday,
+        int ApplyClicksToday,
+        DateTime? LastEventAt
+    );
+
+    public record EventDto(
+        string Type,
+        DateTime Ts
     );
 
     public record ProfileDto(
         List<string> Areas,
-        List<string> PapeisSugeridos,
+        List<string> Roles,
         string? City,
-        string? Gaps
+        List<string> Gaps
     );
 
     public record BestOpportunityDto(
         string? Role,
         string? City,
-        double Match,
+        int? Match,
         string? MissingSkill
     );
 
     public record InsightRequestDto(
         string UserId,
         MetricsDto Metrics,
-        List<string> LastEvents,
+        List<EventDto> LastEvents,
         ProfileDto Profile,
         BestOpportunityDto? BestOpportunity
     );
