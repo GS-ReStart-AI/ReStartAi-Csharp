@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Security;
 using ReStartAI.Api.Swagger.Examples.ResumoPerfil;
 using ReStartAI.Domain.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -10,7 +10,7 @@ namespace ReStartAI.Api.Controllers.Career
 {
     [ApiController]
     [Route("api/usuarios/me")]
-    [Authorize]
+    [ApiKeyAuth] 
     [Produces("application/json")]
     public class ResumoPerfilController : ControllerBase
     {

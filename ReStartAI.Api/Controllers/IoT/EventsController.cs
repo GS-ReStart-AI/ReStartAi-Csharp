@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Security;
 using ReStartAI.Api.Swagger.Examples.Events;
 using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
@@ -11,7 +11,7 @@ namespace ReStartAI.Api.Controllers.IoT
 {
     [ApiController]
     [Route("api/events")]
-    [Authorize]
+    [ApiKeyAuth] 
     [Produces("application/json")]
     public class EventsController : ControllerBase
     {

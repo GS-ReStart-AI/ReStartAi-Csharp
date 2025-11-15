@@ -1,7 +1,6 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Swagger.Examples.Auth;
+using ReStartAI.Api.Security;
 using ReStartAI.Application.Security;
 using ReStartAI.Domain.Entities;
 using ReStartAI.Domain.Interfaces;
@@ -17,13 +16,11 @@ namespace ReStartAI.Api.Controllers
     {
         private readonly IUsuarioRepository _usuarios;
         private readonly PasswordHasher _hasher;
-        private readonly JwtTokenService _jwt;
 
-        public AuthController(IUsuarioRepository usuarios, PasswordHasher hasher, JwtTokenService jwt)
+        public AuthController(IUsuarioRepository usuarios, PasswordHasher hasher)
         {
             _usuarios = usuarios;
             _hasher = hasher;
-            _jwt = jwt;
         }
 
         public record SignupRequest(string NomeCompleto, string Cpf, DateTime DataNascimento, string Email, string Senha);
@@ -31,10 +28,9 @@ namespace ReStartAI.Api.Controllers
         public record AuthResponse(string Token, DateTime ExpiresAt);
 
         [HttpPost("signup")]
-        [AllowAnonymous]
         [SwaggerOperation(
             Summary = "Cadastro de usuário",
-            Description = "Cria um novo usuário e retorna um token JWT para autenticação."
+            Description = "Cria um novo usuário."
         )]
         [SwaggerRequestExample(typeof(SignupRequest), typeof(SignupRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status201Created, typeof(AuthResponseExample))]
@@ -57,24 +53,16 @@ namespace ReStartAI.Api.Controllers
 
             await _usuarios.CreateAsync(u);
 
-            var claims = new[]
-            {
-                new Claim("uid", u.Id!),
-                new Claim(ClaimTypes.Email, u.Email),
-                new Claim(ClaimTypes.Name, u.NomeCompleto ?? u.Email),
-                new Claim(ClaimTypes.Role, "user")
-            };
-
             var expires = DateTime.UtcNow.AddHours(8);
-            var token = _jwt.CreateToken(u.Email, expires, claims);
+            var token = Guid.NewGuid().ToString("N");
+
             return Created(string.Empty, new AuthResponse(token, expires));
         }
 
         [HttpPost("login")]
-        [AllowAnonymous]
         [SwaggerOperation(
             Summary = "Login",
-            Description = "Autentica o usuário e retorna um token JWT."
+            Description = "Valida o usuário e retorna uma resposta de autenticação simples."
         )]
         [SwaggerRequestExample(typeof(LoginRequest), typeof(LoginRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(AuthResponseExample))]
@@ -85,24 +73,17 @@ namespace ReStartAI.Api.Controllers
 
             if (!_hasher.Verify(req.Senha, user.SenhaHash)) return Unauthorized();
 
-            var claims = new[]
-            {
-                new Claim("uid", user.Id!),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.NomeCompleto ?? user.Email),
-                new Claim(ClaimTypes.Role, "user")
-            };
-
             var expires = DateTime.UtcNow.AddHours(8);
-            var token = _jwt.CreateToken(user.Email, expires, claims);
+            var token = Guid.NewGuid().ToString("N");
+
             return Ok(new AuthResponse(token, expires));
         }
 
         [HttpPost("logout")]
-        [Authorize]
+        [ApiKeyAuth]
         [SwaggerOperation(
             Summary = "Logout",
-            Description = "Encerra a sessão do usuário no cliente. No servidor não há estado a invalidar."
+            Description = "Endpoint protegido por API Key. Não invalida estado no servidor."
         )]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult Logout()

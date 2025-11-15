@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Security;
 using ReStartAI.Api.Swagger.Examples.Career;
 using ReStartAI.Application.IoT;
 using ReStartAI.Application.Matching;
@@ -18,7 +18,7 @@ namespace ReStartAI.Api.Controllers.Career
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [ApiKeyAuth] 
     [Produces("application/json")]
     public class CareerController : ControllerBase
     {

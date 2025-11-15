@@ -1,7 +1,4 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -60,24 +57,34 @@ builder.Services.AddSwaggerGen(options =>
 
     options.EnableAnnotations();
     options.ExampleFilters();
+
+    var headerName = builder.Configuration["Swagger:ApiKeyHeaderName"] ?? "x-api-key";
+
+    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = $"Informe a API Key no header `{headerName}`",
+        Name = headerName,
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 builder.Services.AddSwaggerExamplesFromAssemblyOf<UsuarioCreateRequestExample>();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-            ClockSkew = TimeSpan.Zero
-        };
-    });
 
 builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
 builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
@@ -105,7 +112,6 @@ builder.Services.AddDbContext<AppLogContext>(options =>
 builder.Services.AddScoped<LogRepository>();
 
 builder.Services.AddSingleton<PasswordHasher>();
-builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddScoped<InsightTriggerService>();
 builder.Services.AddHttpClient<InsightClient>();
 builder.Services.AddHttpClient<WhyMeGenerator>();
@@ -114,8 +120,6 @@ var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

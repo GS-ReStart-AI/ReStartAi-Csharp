@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Models.Usuarios;
+using ReStartAI.Api.Security;
 using ReStartAI.Api.Swagger.Examples.Usuarios;
 using ReStartAI.Application.Services;
 using ReStartAI.Domain.Entities;
@@ -9,6 +10,7 @@ using Swashbuckle.AspNetCore.Filters;
 namespace ReStartAI.Api.Controllers
 {
     [ApiController]
+    [ApiKeyAuth] 
     [Route("api/v1/usuarios")]
     [Produces("application/json")]
     public class UsuariosController : ControllerBase

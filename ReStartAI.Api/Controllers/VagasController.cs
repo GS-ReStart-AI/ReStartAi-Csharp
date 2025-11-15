@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ReStartAI.Api.Security;
 using ReStartAI.Api.Swagger.Examples.Vaga;
 using ReStartAI.Application.Dto;
 using ReStartAI.Application.Helpers;
@@ -10,6 +11,7 @@ using Swashbuckle.AspNetCore.Filters;
 namespace ReStartAI.Api.Controllers
 {
     [ApiController]
+    [ApiKeyAuth] 
     [Route("api/v1/[controller]")]
     [Produces("application/json")]
     public class VagaController : ControllerBase
