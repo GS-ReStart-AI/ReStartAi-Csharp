@@ -15,8 +15,13 @@ using ReStartAI.Application.WhyMe;
 using ReStartAI.Domain.Interfaces;
 using Swashbuckle.AspNetCore.Filters;
 using ReStartAI.Api.Swagger.Examples.Usuarios;
+using ReStartAI.Application.Pdf;
+using ReStartAI.Api.Integration;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -84,8 +89,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddHttpClient<IResumeSummaryClient, ResumeSummaryClient>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<UsuarioCreateRequestExample>();
-
+builder.Services.Configure<IotOptions>(builder.Configuration.GetSection("Iot"));
+builder.Services.AddScoped<IPdfTextExtractor, PdfTextExtractor>();
 builder.Services.AddScoped<IAppEventRepository, AppEventRepository>();
 builder.Services.AddScoped<ICurriculoRepository, CurriculoRepository>();
 builder.Services.AddScoped<IVagaRepository, VagaRepository>();
@@ -120,6 +127,7 @@ var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
+
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

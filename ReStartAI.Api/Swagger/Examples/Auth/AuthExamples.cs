@@ -1,5 +1,4 @@
-﻿using System;
-using ReStartAI.Api.Controllers;
+﻿using ReStartAI.Api.Controllers;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace ReStartAI.Api.Swagger.Examples.Auth
@@ -11,9 +10,9 @@ namespace ReStartAI.Api.Swagger.Examples.Auth
             return new AuthController.SignupRequest(
                 NomeCompleto: "João Silva",
                 Cpf: "12345678900",
-                DataNascimento: new DateTime(1995, 5, 10),
+                DataNascimento: new DateTime(1995, 5, 20),
                 Email: "joao.silva@example.com",
-                Senha: "Senha@123"
+                Senha: "Senha@0123"
             );
         }
     }
@@ -24,7 +23,7 @@ namespace ReStartAI.Api.Swagger.Examples.Auth
         {
             return new AuthController.LoginRequest(
                 Email: "joao.silva@example.com",
-                Senha: "Senha@123"
+                Senha: "Senha@0123"
             );
         }
     }
@@ -37,7 +36,8 @@ namespace ReStartAI.Api.Swagger.Examples.Auth
 
             return new AuthController.AuthResponse(
                 Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exemplo_payload.assinatura",
-                ExpiresAt: expires
+                ExpiresAt: expires,
+                UsuarioId: "64f8fa343b1d2c0012345678"
             );
         }
     }

@@ -1,69 +1,89 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
+﻿﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Security;
-using ReStartAI.Api.Swagger.Examples.ResumoPerfil;
 using ReStartAI.Domain.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
-using Swashbuckle.AspNetCore.Filters;
+using ReStartAI.Api.Integration;
 
 namespace ReStartAI.Api.Controllers.Career
 {
     [ApiController]
     [Route("api/usuarios/me")]
-    [ApiKeyAuth] 
+    [ApiKeyAuth]
     [Produces("application/json")]
     public class ResumoPerfilController : ControllerBase
     {
-            private readonly ICurriculoRepository _curriculos;
+        public record ResumoResponse(List<string> Areas, List<string> Roles, int Experiencias);
 
-            public ResumoPerfilController(ICurriculoRepository curriculos)
+        private readonly ICurriculoRepository _curriculos;
+        private readonly IResumeSummaryClient _resumeSummary;
+
+        public ResumoPerfilController(ICurriculoRepository curriculos, IResumeSummaryClient resumeSummary)
+        {
+            _curriculos = curriculos;
+            _resumeSummary = resumeSummary;
+        }
+
+        [HttpGet("resumo-perfil")]
+        [SwaggerOperation(
+            Summary = "Retorna um resumo do perfil do usuário",
+            Description = "Gera um resumo do perfil com base no currículo mais recente usando o serviço IoT + GPT-4o mini."
+        )]
+        [ProducesResponseType(typeof(ResumoResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<ActionResult<ResumoResponse>> GetResumoPerfil([FromQuery] string usuarioId, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(usuarioId))
+                return BadRequest("usuarioId obrigatório.");
+
+            var pagina = await _curriculos.GetAllAsync(1, 50);
+            var curr = pagina
+                .Where(c => c.UsuarioId == usuarioId)
+                .OrderByDescending(c => c.CriadoEm)
+                .FirstOrDefault();
+
+            if (curr is null)
+                return NotFound();
+
+            var texto = (curr.Texto ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(texto))
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "Currículo ainda não processado.");
+
+            try
             {
-                _curriculos = curriculos;
-            }
+                var aiResult = await _resumeSummary.GenerateAsync(usuarioId, texto, ct);
 
-            public record ResumoResponse(List<string> Areas, List<string> Roles, int Experiencias);
-
-            [HttpGet("resumo-perfil")]
-            [SwaggerOperation(
-                Summary = "Retorna um resumo do perfil do usuário autenticado",
-                Description = "Gera um resumo simples do perfil a partir do currículo do usuário, incluindo áreas de atuação, possíveis roles e anos de experiência."
-            )]
-            [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ResumoPerfilResponseExample))]
-            [ProducesResponseType(typeof(ResumoResponse), StatusCodes.Status200OK)]
-            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-            public async Task<ActionResult<ResumoResponse>> GetResumoPerfil()
-            {
-                var uid = User.FindFirstValue("uid");
-                if (string.IsNullOrEmpty(uid)) return Unauthorized();
-
-                var curriculosUsuario = await _curriculos.GetAllAsync(1, 10);
-                var curr = curriculosUsuario.FirstOrDefault(c => c.UsuarioId == uid);
-                if (curr is null) return NotFound();
-
-                var skills = curr.Skills ?? new List<string>();
-
-                var areas = new List<string>();
-                if (skills.Any(s => s.Contains("backend", StringComparison.InvariantCultureIgnoreCase) ||
-                                    s.Contains(".net", StringComparison.InvariantCultureIgnoreCase)))
-                    areas.Add("Back-end .NET");
-                if (skills.Any(s => s.Contains("api", StringComparison.InvariantCultureIgnoreCase)))
-                    areas.Add("APIs e Integrações");
+                var areas = aiResult.Areas?.ToList() ?? new List<string>();
                 if (!areas.Any())
-                    areas.Add("Desenvolvimento de Software");
+                    areas.Add("Área em análise");
 
-                var roles = new List<string>
+                var roles = new List<string>();
+                if (!string.IsNullOrWhiteSpace(aiResult.BestRole))
+                    roles.Add(aiResult.BestRole);
+                if (aiResult.Roles != null && aiResult.Roles.Count > 0)
                 {
-                    "Desenvolvedor .NET",
-                    "Backend Developer"
-                };
+                    foreach (var r in aiResult.Roles)
+                    {
+                        if (!string.IsNullOrWhiteSpace(r) && !roles.Contains(r))
+                            roles.Add(r);
+                    }
+                }
 
-                var experiencias = curr.CriadoEm == default
-                    ? 1
-                    : Math.Max(1, DateTime.UtcNow.Year - curr.CriadoEm.Year);
+                if (!roles.Any())
+                    roles.Add("Papel em análise");
+
+                var experiencias = aiResult.YearsOfExperience;
+                if (experiencias < 0)
+                    experiencias = 0;
 
                 var resp = new ResumoResponse(areas, roles, experiencias);
                 return Ok(resp);
             }
+            catch
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "Não foi possível gerar o resumo no momento.");
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Swagger.Examples.Auth;
 using ReStartAI.Api.Security;
 using ReStartAI.Application.Security;
@@ -25,7 +25,7 @@ namespace ReStartAI.Api.Controllers
 
         public record SignupRequest(string NomeCompleto, string Cpf, DateTime DataNascimento, string Email, string Senha);
         public record LoginRequest(string Email, string Senha);
-        public record AuthResponse(string Token, DateTime ExpiresAt);
+        public record AuthResponse(string Token, DateTime ExpiresAt, string UsuarioId);
 
         [HttpPost("signup")]
         [SwaggerOperation(
@@ -51,12 +51,12 @@ namespace ReStartAI.Api.Controllers
                 SenhaHash = _hasher.Hash(req.Senha)
             };
 
-            await _usuarios.CreateAsync(u);
+            var created = await _usuarios.CreateAsync(u);
 
             var expires = DateTime.UtcNow.AddHours(8);
             var token = Guid.NewGuid().ToString("N");
 
-            return Created(string.Empty, new AuthResponse(token, expires));
+            return Created(string.Empty, new AuthResponse(token, expires, created.Id));
         }
 
         [HttpPost("login")]
@@ -76,7 +76,7 @@ namespace ReStartAI.Api.Controllers
             var expires = DateTime.UtcNow.AddHours(8);
             var token = Guid.NewGuid().ToString("N");
 
-            return Ok(new AuthResponse(token, expires));
+            return Ok(new AuthResponse(token, expires, user.Id));
         }
 
         [HttpPost("logout")]
