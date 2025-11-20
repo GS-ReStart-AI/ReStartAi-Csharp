@@ -97,7 +97,10 @@ Passos básicos:
   👉 
   
 ------------------------------------------
-6. 👩‍💻 Equipe
+### 6. 👩‍💻 Equipe:
 
 - ⭐️ Valéria Conceição Dos Santos — RM: 557177
 - ⭐️ Mirela Pinheiro Silva Rodrigues — RM: 558191
+
+-------------------------------------------
+
