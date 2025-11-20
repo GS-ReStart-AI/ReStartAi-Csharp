@@ -17,7 +17,7 @@ using Swashbuckle.AspNetCore.Filters;
 using ReStartAI.Api.Swagger.Examples.Usuarios;
 using ReStartAI.Application.Pdf;
 using ReStartAI.Api.Integration;
-
+using ReStartAI.Application.Matching;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -113,6 +113,8 @@ builder.Services.AddHealthChecks().AddMongoDb(
     name: "mongodb"
 );
 
+builder.Services.AddSingleton<DeterministicMatcher>();
+builder.Services.AddHttpClient<WhyMeGenerator>();
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddDbContext<AppLogContext>(options =>
     options.UseSqlite("Data Source=logs.db"));

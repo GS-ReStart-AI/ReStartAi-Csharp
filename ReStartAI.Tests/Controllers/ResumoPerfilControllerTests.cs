@@ -22,17 +22,27 @@ namespace ReStartAI.Tests.Controllers
 
         private ResumoPerfilController CreateController()
         {
-            return new ResumoPerfilController(_curriculosMock.Object, _resumeSummaryMock.Object);
+            return new ResumoPerfilController(
+                _curriculosMock.Object,
+                _resumeSummaryMock.Object,
+                null!,
+                null!,
+                null!
+            );
         }
 
-        [Fact]
-        public async Task GetResumoPerfil_sem_usuarioId_deve_retornar_400()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task GetResumoPerfil_sem_usuarioId_deve_retornar_400(string? usuarioId)
         {
             var controller = CreateController();
 
-            var result = await controller.GetResumoPerfil(usuarioId: null!, CancellationToken.None);
+            var result = await controller.GetResumoPerfil(usuarioId!, CancellationToken.None);
 
-            result.Result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequest = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            badRequest.Value.Should().Be("usuarioId obrigatório.");
         }
 
         [Fact]
@@ -40,9 +50,21 @@ namespace ReStartAI.Tests.Controllers
         {
             var controller = CreateController();
 
+            var curriculos = new List<Curriculo>
+            {
+                new Curriculo
+                {
+                    Id = "c2",
+                    UsuarioId = "outro-usuario",
+                    NomeArquivo = "cv2.pdf",
+                    Texto = "texto qualquer",
+                    CriadoEm = DateTime.UtcNow.AddDays(-2)
+                }
+            };
+
             _curriculosMock
                 .Setup(r => r.GetAllAsync(1, 50))
-                .ReturnsAsync(new List<Curriculo>());
+                .ReturnsAsync(curriculos);
 
             var result = await controller.GetResumoPerfil("usuario-1", CancellationToken.None);
 
@@ -74,6 +96,7 @@ namespace ReStartAI.Tests.Controllers
 
             var obj = result.Result.Should().BeOfType<ObjectResult>().Subject;
             obj.StatusCode.Should().Be(503);
+            obj.Value.Should().Be("Currículo ainda não processado.");
         }
 
         [Fact]
@@ -122,6 +145,48 @@ namespace ReStartAI.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetResumoPerfil_quando_ai_retorna_sem_areas_e_roles_deve_usar_valores_padrao()
+        {
+            var controller = CreateController();
+
+            var curriculos = new List<Curriculo>
+            {
+                new Curriculo
+                {
+                    Id = "c1",
+                    UsuarioId = "usuario-1",
+                    NomeArquivo = "cv.pdf",
+                    Texto = "curriculo de teste",
+                    CriadoEm = DateTime.UtcNow
+                }
+            };
+
+            _curriculosMock
+                .Setup(r => r.GetAllAsync(1, 50))
+                .ReturnsAsync(curriculos);
+
+            _resumeSummaryMock
+                .Setup(c => c.GenerateAsync("usuario-1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResumeSummaryResult(
+                    Areas: Array.Empty<string>(),
+                    BestRole: "",
+                    Roles: Array.Empty<string>(),
+                    Seniority: "",
+                    YearsOfExperience: -1,
+                    SkillsDetected: Array.Empty<string>()
+                ));
+
+            var result = await controller.GetResumoPerfil("usuario-1", CancellationToken.None);
+
+            var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+            var resumo = ok.Value.Should().BeOfType<ResumoPerfilController.ResumoResponse>().Subject;
+
+            resumo.Areas.Should().ContainSingle().Which.Should().Be("Área em análise");
+            resumo.Roles.Should().ContainSingle().Which.Should().Be("Papel em análise");
+            resumo.Experiencias.Should().Be(0);
+        }
+
+        [Fact]
         public async Task GetResumoPerfil_com_curriculo_e_ai_falhando_deve_retornar_503()
         {
             var controller = CreateController();
@@ -150,6 +215,7 @@ namespace ReStartAI.Tests.Controllers
 
             var obj = result.Result.Should().BeOfType<ObjectResult>().Subject;
             obj.StatusCode.Should().Be(503);
+            obj.Value.Should().Be("Não foi possível gerar o resumo no momento.");
         }
     }
 }

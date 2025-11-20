@@ -1,8 +1,10 @@
-﻿﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ReStartAI.Api.Security;
 using ReStartAI.Domain.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 using ReStartAI.Api.Integration;
+using ReStartAI.Application.Matching;
+using ReStartAI.Application.WhyMe;
 
 namespace ReStartAI.Api.Controllers.Career
 {
@@ -12,15 +14,33 @@ namespace ReStartAI.Api.Controllers.Career
     [Produces("application/json")]
     public class ResumoPerfilController : ControllerBase
     {
-        public record ResumoResponse(List<string> Areas, List<string> Roles, int Experiencias);
+        public record ResumoResponse(
+            List<string> Areas,
+            List<string> Roles,
+            int Experiencias,
+            string BestRole,
+            double Match,
+            string WhyYou
+        );
 
         private readonly ICurriculoRepository _curriculos;
         private readonly IResumeSummaryClient _resumeSummary;
+        private readonly IVagaRepository _vagas;
+        private readonly DeterministicMatcher _matcher;
+        private readonly WhyMeGenerator _whyMe;
 
-        public ResumoPerfilController(ICurriculoRepository curriculos, IResumeSummaryClient resumeSummary)
+        public ResumoPerfilController(
+            ICurriculoRepository curriculos,
+            IResumeSummaryClient resumeSummary,
+            IVagaRepository vagas,
+            DeterministicMatcher matcher,
+            WhyMeGenerator whyMe)
         {
             _curriculos = curriculos;
             _resumeSummary = resumeSummary;
+            _vagas = vagas;
+            _matcher = matcher;
+            _whyMe = whyMe;
         }
 
         [HttpGet("resumo-perfil")]
@@ -59,8 +79,11 @@ namespace ReStartAI.Api.Controllers.Career
                     areas.Add("Área em análise");
 
                 var roles = new List<string>();
-                if (!string.IsNullOrWhiteSpace(aiResult.BestRole))
-                    roles.Add(aiResult.BestRole);
+                var bestRole = aiResult.BestRole ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(bestRole))
+                    roles.Add(bestRole);
+
                 if (aiResult.Roles != null && aiResult.Roles.Count > 0)
                 {
                     foreach (var r in aiResult.Roles)
@@ -73,11 +96,46 @@ namespace ReStartAI.Api.Controllers.Career
                 if (!roles.Any())
                     roles.Add("Papel em análise");
 
+                if (string.IsNullOrWhiteSpace(bestRole))
+                    bestRole = roles.FirstOrDefault() ?? string.Empty;
+
                 var experiencias = aiResult.YearsOfExperience;
                 if (experiencias < 0)
                     experiencias = 0;
 
-                var resp = new ResumoResponse(areas, roles, experiencias);
+                var skills = aiResult.SkillsDetected?.ToList() ?? new List<string>();
+
+                double matchPercent = 0;
+                string whyYou = string.Empty;
+
+                if (skills.Count > 0)
+                {
+                    var vagas = await _vagas.GetAllAsync(page: 1, pageSize: 1000);
+
+                    var bestMatch = _matcher.BestMatch(vagas, skills);
+
+                    if (bestMatch is not null)
+                    {
+                        matchPercent = Math.Round(bestMatch.Percentual * 100, 2);
+
+                        var papelParaExplicar = !string.IsNullOrWhiteSpace(bestRole)
+                            ? bestRole
+                            : (roles.FirstOrDefault() ?? string.Empty);
+
+                        var bullets = await _whyMe.GenerateAsync(
+                            papel: papelParaExplicar,
+                            userSkills: skills,
+                            mustMatched: bestMatch.MustMatched,
+                            niceMatched: bestMatch.NiceMatched,
+                            mustMissing: bestMatch.MustMissing,
+                            niceMissing: bestMatch.NiceMissing
+                        );
+
+                        whyYou = string.Join(" ", bullets);
+                    }
+                }
+
+                var resp = new ResumoResponse(areas, roles, experiencias, bestRole, matchPercent, whyYou);
                 return Ok(resp);
             }
             catch
