@@ -129,7 +129,7 @@ namespace ReStartAI.Tests.Controllers
                     Roles: new List<string> { "Atendente de Cafeteria Jr", "Auxiliar de Atendimento" },
                     Seniority: "junior",
                     YearsOfExperience: 1,
-                    SkillsDetected: new List<string> { "Atendimento ao cliente", "Comunicação" }
+                    SkillsDetected: Array.Empty<string>() // <- só isso muda
                 ));
 
             var result = await controller.GetResumoPerfil("usuario-1", CancellationToken.None);
