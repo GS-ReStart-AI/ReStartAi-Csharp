@@ -84,6 +84,10 @@ Passos básicos:
 4️⃣ Testar no navegador:
    - Swagger: `http://localhost:5000/swagger` (ou a porta configurada) 🌐
 
+5️⃣ Testes Localmente:
+   - cd ReStartAI.Tests
+   - dotnet test
+
 ------------------------------------------
 ### 5. 🔗 Deploy e links importantes
 
@@ -103,5 +107,6 @@ Passos básicos:
 - ⭐️ Mirela Pinheiro Silva Rodrigues — RM: 558191
 
 -------------------------------------------
+
 
 
