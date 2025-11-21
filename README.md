@@ -94,7 +94,7 @@ Passos básicos:
   👉 `API_KEY = "dev-swagger-key-123"`
 
 - 🎥 **Link do vídeo:**  
-  👉 
+  👉 https://youtu.be/t01p_cDDX38
   
 ------------------------------------------
 ### 6. 👩‍💻 Equipe:
@@ -103,4 +103,5 @@ Passos básicos:
 - ⭐️ Mirela Pinheiro Silva Rodrigues — RM: 558191
 
 -------------------------------------------
+
 
